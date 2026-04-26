@@ -859,81 +859,182 @@ body::before {
 .trade-result-banner.reject { background: rgba(204,34,34,0.15); border: 1px solid var(--red); color: #ff6666; }
 .trade-result-banner.counter { background: rgba(234,179,8,0.1); border: 1px solid rgba(234,179,8,0.3); color: #eab308; }
 
-/* WELCOME SCREEN */
-.welcome-screen {
+/* ENTRY SCREEN — hard gate */
+.entry-screen {
   position: fixed;
   inset: 0;
-  background: var(--bg);
-  z-index: 1000;
+  background: #050505;
+  z-index: 2000;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding: 24px;
+  overflow: hidden;
 }
-.welcome-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 40px;
-  max-width: 500px;
-  width: 100%;
+.entry-screen::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent, transparent 79px,
+    rgba(20,60,20,0.18) 79px, rgba(20,60,20,0.18) 80px
+  );
+  pointer-events: none;
+}
+.entry-screen::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 55%, transparent 35%, #050505 80%);
+  pointer-events: none;
+}
+.entry-content {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
+  max-width: 600px;
+  width: 100%;
 }
-.welcome-logo {
-  font-size: 42px;
-  font-weight: 900;
-  letter-spacing: -2px;
+.entry-pre {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 10px;
   color: var(--orange);
   text-transform: uppercase;
-  margin-bottom: 6px;
+  margin-bottom: -6px;
 }
-.welcome-logo span { color: var(--white); }
-.welcome-sub {
-  font-size: 14px;
-  color: var(--muted);
-  margin-bottom: 28px;
-  line-height: 1.5;
-}
-.welcome-input {
-  width: 100%;
-  background: var(--surface2);
-  border: 1px solid var(--border);
+.entry-title {
+  font-size: clamp(68px, 14vw, 138px);
+  font-weight: 900;
+  letter-spacing: -4px;
   color: var(--white);
+  line-height: 0.88;
+  text-transform: uppercase;
+  text-shadow:
+    0 0 80px rgba(255,107,0,0.22),
+    0 0 40px rgba(255,107,0,0.10);
+  animation: entryGlow 3.5s ease-in-out infinite alternate;
+}
+@keyframes entryGlow {
+  from { text-shadow: 0 0 60px rgba(255,107,0,0.18), 0 0 30px rgba(255,107,0,0.08); }
+  to   { text-shadow: 0 0 110px rgba(255,107,0,0.38), 0 0 55px rgba(255,107,0,0.20); }
+}
+.entry-tagline {
   font-size: 16px;
-  padding: 14px 16px;
+  font-weight: 400;
+  color: rgba(245,245,245,0.4);
+  letter-spacing: 0.2px;
+  margin-top: 22px;
+  line-height: 1.5;
+  font-style: italic;
+}
+.entry-divider {
+  width: 56px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--orange), transparent);
+  margin: 28px auto 30px;
+}
+.entry-new-panel, .entry-save-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  max-width: 400px;
+}
+.entry-team-input {
+  width: 100%;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.11);
+  color: var(--white);
+  font-size: 18px;
+  font-weight: 600;
+  padding: 16px 20px;
   border-radius: 10px;
   outline: none;
-  margin-bottom: 12px;
-  transition: border-color 0.2s;
+  text-align: center;
+  letter-spacing: 0.3px;
+  transition: border-color 0.2s, background 0.2s;
 }
-.welcome-input:focus { border-color: var(--orange); }
-.welcome-start {
+.entry-team-input::placeholder { color: rgba(255,255,255,0.18); }
+.entry-team-input:focus {
+  border-color: rgba(255,107,0,0.6);
+  background: rgba(255,107,0,0.04);
+}
+.btn-entry-primary {
   width: 100%;
   background: var(--orange);
   color: white;
   border: none;
-  padding: 14px;
+  padding: 18px 24px;
   border-radius: 10px;
-  font-size: 16px;
-  font-weight: 700;
+  font-size: 15px;
+  font-weight: 800;
   cursor: pointer;
-  transition: background 0.15s;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  transition: background 0.15s, transform 0.12s, box-shadow 0.15s;
+  box-shadow: 0 4px 28px rgba(255,107,0,0.32);
+}
+.btn-entry-primary:hover {
+  background: #e06000;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 36px rgba(255,107,0,0.48);
+}
+.btn-entry-primary:active { transform: translateY(0); }
+.entry-save-info {
+  font-size: 12px;
+  color: rgba(255,255,255,0.28);
   letter-spacing: 0.5px;
-  margin-top: 8px;
+  margin: -4px 0 2px;
 }
-.welcome-start:hover { background: #e06000; }
-.welcome-rules {
-  margin-top: 24px;
-  padding-top: 24px;
-  border-top: 1px solid var(--border);
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  text-align: left;
+.btn-entry-ghost {
+  background: transparent;
+  color: rgba(255,255,255,0.3);
+  border: 1px solid rgba(255,255,255,0.10);
+  padding: 13px 24px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  transition: all 0.15s;
+  width: 100%;
 }
-.rule-item { }
-.rule-title { font-size: 11px; font-weight: 700; color: var(--orange); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 3px; }
-.rule-val { font-size: 12px; color: var(--muted); }
+.btn-entry-ghost:hover {
+  color: var(--white);
+  border-color: rgba(255,255,255,0.28);
+}
+.entry-warning {
+  font-size: 11px;
+  color: rgba(204,34,34,0.65);
+  letter-spacing: 0.5px;
+  text-align: center;
+}
+.entry-fresh-confirm {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+.entry-specs {
+  position: absolute;
+  bottom: 22px;
+  font-size: 10px;
+  color: rgba(255,255,255,0.12);
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+/* game container — hidden until entry gate passed */
+#gameContainer { display: none; }
 
 /* EMPTY STATE */
 .empty-inbox {
@@ -989,21 +1090,40 @@ body::before {
 </style>
 </head>
 <body>
-<!-- WELCOME SCREEN -->
-<div class="welcome-screen" id="welcomeScreen">
-  <div class="welcome-card">
-    <div class="welcome-logo">The <span>Rebuild</span></div>
-    <p class="welcome-sub">Dynasty football rebuild simulator. SuperFlex PPR TEP. 10-team league.<br>You start at D−. Build to A+. Win the chip.</p>
-    <input class="welcome-input" id="teamNameInput" placeholder="Name your franchise..." maxlength="32" />
-    <div class="welcome-rules">
-      <div class="rule-item"><div class="rule-title">Format</div><div class="rule-val">SuperFlex PPR TEP</div></div>
-      <div class="rule-item"><div class="rule-title">Roster</div><div class="rule-val">20 + 4 IR + 4 Taxi</div></div>
-      <div class="rule-item"><div class="rule-title">League</div><div class="rule-val">10-team, Solo vs AI</div></div>
-      <div class="rule-item"><div class="rule-title">Win Condition</div><div class="rule-val">Grade A + Championship</div></div>
+<!-- ENTRY SCREEN — hard gate, always on top -->
+<div class="entry-screen" id="entryScreen">
+  <div class="entry-content">
+    <div class="entry-pre">The</div>
+    <div class="entry-title">Rebuild</div>
+    <div class="entry-tagline">You inherited a dumpster fire.<br>Prove them wrong.</div>
+    <div class="entry-divider"></div>
+
+    <!-- No save: show team name input + start button -->
+    <div class="entry-new-panel" id="entryNewPanel" style="display:none">
+      <input class="entry-team-input" id="teamNameInput" placeholder="Name your franchise..." maxlength="32" autocomplete="off" />
+      <button class="btn-entry-primary" onclick="startNewGame()">Start Your Rebuild →</button>
     </div>
-    <button class="welcome-start" onclick="startGame()">START YOUR REBUILD →</button>
+
+    <!-- Save exists: continue or fresh start -->
+    <div class="entry-save-panel" id="entrySavePanel" style="display:none">
+      <button class="btn-entry-primary" onclick="continueGame()">▶ Continue Your Rebuild</button>
+      <div class="entry-save-info" id="entrySaveInfo"></div>
+      <div id="entryFreshSection">
+        <button class="btn-entry-ghost" onclick="startFreshPrompt()" style="margin-bottom:6px">↺ Start Fresh</button>
+        <div class="entry-warning" id="entryFreshWarning" style="display:none">⚠ This will permanently erase your current rebuild</div>
+        <div class="entry-fresh-confirm" id="entryFreshConfirm" style="display:none">
+          <input class="entry-team-input" id="teamNameInputFresh" placeholder="Name your new franchise..." maxlength="32" autocomplete="off" />
+          <button class="btn-entry-primary" style="background:#cc2222;box-shadow:0 4px 24px rgba(204,34,34,0.3)" onclick="confirmStartFresh()">Yes, Wipe It &amp; Rebuild →</button>
+          <button class="btn-entry-ghost" onclick="cancelFresh()">Never Mind</button>
+        </div>
+      </div>
+    </div>
   </div>
+  <div class="entry-specs">SuperFlex PPR TEP &nbsp;·&nbsp; 10-Team &nbsp;·&nbsp; 20 + 4IR + 4Taxi &nbsp;·&nbsp; D− → A+</div>
 </div>
+
+<!-- GAME CONTAINER — hidden until entry gate is passed -->
+<div id="gameContainer">
 
 <!-- HEADER -->
 <header class="header">
@@ -1658,27 +1778,122 @@ let STATE = {
 
 function nextOfferId() { return 'offer_' + (++STATE.offerIdCounter); }
 
-function startGame() {
-  const input = document.getElementById('teamNameInput');
-  const name = (input.value || '').trim() || 'My Rebuild';
+// ====================================================
+// SAVE / LOAD
+// ====================================================
+const SAVE_KEY = 'the_rebuild_v1';
+
+function saveGame() {
+  try {
+    const snap = {
+      teamName: STATE.teamName,
+      week: STATE.week,
+      record: STATE.record,
+      humanRoster: STATE.humanRoster,
+      gmRosters: STATE.gmRosters,
+      inbox: STATE.inbox,
+      offerIdCounter: STATE.offerIdCounter,
+      savedAt: Date.now(),
+    };
+    localStorage.setItem(SAVE_KEY, JSON.stringify(snap));
+  } catch(e) {}
+}
+
+function loadSave() {
+  try {
+    const raw = localStorage.getItem(SAVE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch(e) { return null; }
+}
+
+function clearSave() {
+  try { localStorage.removeItem(SAVE_KEY); } catch(e) {}
+}
+
+// ====================================================
+// ENTRY SCREEN GATE
+// ====================================================
+function showEntryScreen() {
+  const save = loadSave();
+  document.getElementById('entryScreen').style.display = 'flex';
+  document.getElementById('gameContainer').style.display = 'none';
+  if (save && save.humanRoster) {
+    document.getElementById('entryNewPanel').style.display = 'none';
+    document.getElementById('entrySavePanel').style.display = 'flex';
+    const d = new Date(save.savedAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+    document.getElementById('entrySaveInfo').textContent =
+      `${save.teamName} · Week ${save.week || 1} · Saved ${d}`;
+  } else {
+    document.getElementById('entryNewPanel').style.display = 'flex';
+    document.getElementById('entrySavePanel').style.display = 'none';
+  }
+}
+
+function hideEntryScreen() {
+  document.getElementById('entryScreen').style.display = 'none';
+  document.getElementById('gameContainer').style.display = 'block';
+}
+
+function startFreshPrompt() {
+  document.getElementById('entryFreshWarning').style.display = 'block';
+  document.getElementById('entryFreshConfirm').style.display = 'flex';
+  document.querySelector('#entryFreshSection .btn-entry-ghost').style.display = 'none';
+  document.getElementById('teamNameInputFresh').focus();
+}
+
+function cancelFresh() {
+  document.getElementById('entryFreshWarning').style.display = 'none';
+  document.getElementById('entryFreshConfirm').style.display = 'none';
+  document.querySelector('#entryFreshSection .btn-entry-ghost').style.display = '';
+}
+
+function confirmStartFresh() {
+  clearSave();
+  const name = (document.getElementById('teamNameInputFresh').value || '').trim() || 'My Rebuild';
+  _initNewGame(name);
+}
+
+function startNewGame() {
+  const name = (document.getElementById('teamNameInput').value || '').trim() || 'My Rebuild';
+  _initNewGame(name);
+}
+
+function continueGame() {
+  const save = loadSave();
+  if (!save || !save.humanRoster) { showEntryScreen(); return; }
+
+  STATE.teamName = save.teamName;
+  STATE.week = save.week || 1;
+  STATE.record = save.record || {w:0, l:0};
+  STATE.humanRoster = save.humanRoster;
+  STATE.gmRosters = save.gmRosters || {};
+  STATE.inbox = save.inbox || [];
+  STATE.offerIdCounter = save.offerIdCounter || 0;
+  STATE.initialized = true;
+
+  _populateTradeSelect();
+  document.getElementById('headerTeamName').value = STATE.teamName;
+  const wb = document.getElementById('weekBadge');
+  if (wb) wb.textContent = `WEEK ${STATE.week}`;
+
+  hideEntryScreen();
+  renderAll();
+  scheduleAIOffers();
+  showToast('👋 Welcome back!', `Continuing your rebuild as ${STATE.teamName}`, 'success');
+}
+
+function _initNewGame(name) {
   STATE.teamName = name;
-  document.getElementById('headerTeamName').value = name;
+  STATE.week = 1;
+  STATE.record = {w:0, l:0};
   STATE.humanRoster = generateDMinusRoster();
+  STATE.inbox = [];
+  STATE.offerIdCounter = 0;
 
-  // Build AI GM rosters
   AI_GMS.forEach(gm => { STATE.gmRosters[gm.id] = buildGmRoster(gm.id); });
+  _populateTradeSelect();
 
-  // Populate trade partner select
-  const sel = document.getElementById('tradePartnerSelect');
-  sel.innerHTML = '<option value="">— Select Trade Partner —</option>';
-  AI_GMS.forEach(gm => {
-    const opt = document.createElement('option');
-    opt.value = gm.id;
-    opt.textContent = `${gm.avatar} ${gm.name} — ${gm.team}`;
-    sel.appendChild(opt);
-  });
-
-  // Generate initial proactive offers (2-3 GMs)
   let count = 0;
   for (const gm of AI_GMS) {
     if (count >= 3) break;
@@ -1694,15 +1909,28 @@ function startGame() {
   }
 
   STATE.initialized = true;
-  document.getElementById('welcomeScreen').style.display = 'none';
+  document.getElementById('headerTeamName').value = STATE.teamName;
+  saveGame();
+  hideEntryScreen();
   renderAll();
-
-  // Simulate AI GMs sending offers over time
   scheduleAIOffers();
+}
+
+function _populateTradeSelect() {
+  const sel = document.getElementById('tradePartnerSelect');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">— Select Trade Partner —</option>';
+  AI_GMS.forEach(gm => {
+    const opt = document.createElement('option');
+    opt.value = gm.id;
+    opt.textContent = `${gm.avatar} ${gm.name} — ${gm.team}`;
+    sel.appendChild(opt);
+  });
 }
 
 function updateTeamName(val) {
   STATE.teamName = val || 'My Team';
+  saveGame();
 }
 
 function scheduleAIOffers() {
@@ -1937,6 +2165,7 @@ function advanceWeek() {
     if(offer){offer.id=nextOfferId();offer.timestamp=Date.now();offer.read=false;STATE.inbox.unshift(offer);newOffers++;}
   }
   showToast('⏭ Week '+STATE.week+' — New offers incoming',newOffers+' AI GM'+(newOffers!==1?'s':'')+' sent you trade proposals.','info');
+  saveGame();
   renderInboxPreview();renderInboxFull();updateInboxBadge();
 }
 
@@ -2031,6 +2260,7 @@ function acceptOffer(offerId) {
   STATE.inbox = STATE.inbox.filter(o=>o.id!==offerId);
 
   showToast(`🤝 Trade Accepted!`, `You accepted ${gm.name}'s offer. Your roster has been updated.`, 'success');
+  saveGame();
   renderAll();
 }
 
@@ -2225,6 +2455,7 @@ function submitTrade() {
     executeTrade(give, get, gmId);
     STATE.tradeBuilderGive = [];
     STATE.tradeBuilderGet = [];
+    saveGame();
   } else if (result.result === 'counter') {
     const giveVal = give.reduce((s,a)=>s+(a.value||0),0);
     const getVal  = get.reduce((s,a)=>s+(a.value||0),0);
@@ -2330,10 +2561,19 @@ document.getElementById('tradeModal').addEventListener('click',function(e){
   if (e.target===this) closeTradeModal();
 });
 
-// Enter key on welcome screen
+// Enter key on new-game input
 document.getElementById('teamNameInput').addEventListener('keydown',function(e){
-  if (e.key==='Enter') startGame();
+  if (e.key==='Enter') startNewGame();
+});
+document.getElementById('teamNameInputFresh').addEventListener('keydown',function(e){
+  if (e.key==='Enter') confirmStartFresh();
+});
+
+// On page load: check for save and show appropriate entry panel
+document.addEventListener('DOMContentLoaded', function() {
+  showEntryScreen();
 });
 </script>
+</div><!-- end gameContainer -->
 </body>
 </html>
