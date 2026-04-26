@@ -1345,19 +1345,20 @@ const PICKS_DB = [
 ];
 
 // Grade thresholds
+// Calibrated for real KTC SF values: D- roster ~82K, A+ roster ~210K+
 const GRADES = [
-  {grade:'D-',min:0,     max:25000, color:'#cc2222'},
-  {grade:'D', min:25000, max:35000, color:'#d03300'},
-  {grade:'D+',min:35000, max:45000, color:'#cc5500'},
-  {grade:'C-',min:45000, max:55000, color:'#cc7700'},
-  {grade:'C', min:55000, max:65000, color:'#cc9900'},
-  {grade:'C+',min:65000, max:75000, color:'#ccbb00'},
-  {grade:'B-',min:75000, max:85000, color:'#aacc00'},
-  {grade:'B', min:85000, max:95000, color:'#77cc00'},
-  {grade:'B+',min:95000, max:108000,color:'#55cc00'},
-  {grade:'A-',min:108000,max:120000,color:'#33bb00'},
-  {grade:'A', min:120000,max:135000,color:'#22aa00'},
-  {grade:'A+',min:135000,max:999999,color:'#119900'},
+  {grade:'D-',min:0,      max:88000,  color:'#cc2222'},
+  {grade:'D', min:88000,  max:100000, color:'#d03300'},
+  {grade:'D+',min:100000, max:113000, color:'#cc5500'},
+  {grade:'C-',min:113000, max:126000, color:'#cc7700'},
+  {grade:'C', min:126000, max:140000, color:'#cc9900'},
+  {grade:'C+',min:140000, max:153000, color:'#ccbb00'},
+  {grade:'B-',min:153000, max:164000, color:'#aacc00'},
+  {grade:'B', min:164000, max:175000, color:'#77cc00'},
+  {grade:'B+',min:175000, max:186000, color:'#55cc00'},
+  {grade:'A-',min:186000, max:198000, color:'#33bb00'},
+  {grade:'A', min:198000, max:212000, color:'#22aa00'},
+  {grade:'A+',min:212000, max:999999, color:'#119900'},
 ];
 
 function getGradeInfo(totalValue) {
@@ -1367,18 +1368,19 @@ function getGradeInfo(totalValue) {
   return GRADES[GRADES.length - 1];
 }
 
+// Per-player grade: KTC SF TEP scale (max ~10K)
 function playerGradeInfo(value) {
-  if (value >= 9000) return {grade:'A+',color:'#22aa00'};
-  if (value >= 7500) return {grade:'A', color:'#33bb00'};
-  if (value >= 6000) return {grade:'A-',color:'#44cc00'};
-  if (value >= 5000) return {grade:'B+',color:'#77cc00'};
-  if (value >= 4000) return {grade:'B', color:'#aacc00'};
-  if (value >= 3000) return {grade:'B-',color:'#ccbb00'};
-  if (value >= 2000) return {grade:'C+',color:'#cc9900'};
-  if (value >= 1500) return {grade:'C', color:'#cc7700'};
-  if (value >= 1000) return {grade:'C-',color:'#cc5500'};
-  if (value >= 600)  return {grade:'D+',color:'#cc4400'};
-  if (value >= 300)  return {grade:'D', color:'#cc3300'};
+  if (value >= 9500) return {grade:'A+',color:'#119900'};
+  if (value >= 8500) return {grade:'A', color:'#22aa00'};
+  if (value >= 7500) return {grade:'A-',color:'#33bb00'};
+  if (value >= 6500) return {grade:'B+',color:'#55cc00'};
+  if (value >= 5500) return {grade:'B', color:'#77cc00'};
+  if (value >= 4500) return {grade:'B-',color:'#aacc00'};
+  if (value >= 3500) return {grade:'C+',color:'#ccbb00'};
+  if (value >= 2500) return {grade:'C', color:'#cc9900'};
+  if (value >= 1800) return {grade:'C-',color:'#cc7700'};
+  if (value >= 1200) return {grade:'D+',color:'#cc5500'};
+  if (value >= 700)  return {grade:'D', color:'#cc3300'};
   return {grade:'D-',color:'#cc2222'};
 }
 </script>
