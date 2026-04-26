@@ -40,6 +40,16 @@ body {
   overflow-x: hidden;
 }
 
+/* INITIALS AVATAR */
+.player-avatar{width:44px;height:44px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;letter-spacing:-0.5px;border:2px solid rgba(255,255,255,0.08);}
+.avatar-QB{background:rgba(139,92,246,0.22);border-color:rgba(139,92,246,0.4);color:#c4b5fd;}
+.avatar-RB{background:rgba(34,197,94,0.16);border-color:rgba(34,197,94,0.35);color:#86efac;}
+.avatar-WR{background:rgba(59,130,246,0.16);border-color:rgba(59,130,246,0.35);color:#93c5fd;}
+.avatar-TE{background:rgba(249,115,22,0.16);border-color:rgba(249,115,22,0.35);color:#fdba74;}
+/* POSITION DIVIDER */
+.pos-divider{grid-column:1/-1;display:flex;align-items:center;gap:10px;padding:6px 0 2px;margin-top:4px;}
+.pos-divider-label{font-size:10px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;white-space:nowrap;padding:2px 8px;border-radius:4px;}
+.pos-divider-line{flex:1;height:1px;opacity:0.25;}
 /* TURF BACKGROUND */
 body::before {
   content: '';
@@ -160,24 +170,11 @@ body::before {
   border-radius: 3px;
   transition: width 0.6s ease, background 0.6s ease;
 }
-.nav-tabs {
-  display: flex;
-  gap: 4px;
-  flex-shrink: 0;
-}
-.nav-tab {
-  padding: 6px 14px;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  border: 1px solid transparent;
-  color: var(--muted);
-  transition: all 0.2s;
-  white-space: nowrap;
-}
-.nav-tab:hover { color: var(--white); border-color: var(--border); }
-.nav-tab.active { background: var(--orange); color: white; border-color: var(--orange); }
+.nav-tabs { display:flex; gap:3px; flex-shrink:0; margin-left:auto; }
+.nav-tab { padding:6px 15px; border-radius:6px; font-size:13px; font-weight:600; cursor:pointer; border:1px solid transparent; color:var(--muted); transition:all 0.2s; white-space:nowrap; display:flex; align-items:center; gap:5px; }
+.nav-tab:hover { color:var(--white); border-color:var(--border); }
+.nav-tab.active { background:var(--orange); color:white; border-color:var(--orange); }
+@media(max-width:768px){.nav-tab{padding:6px 9px;font-size:11px;}.header-team{min-width:0;flex:1;}}
 .inbox-dot {
   display: inline-block;
   width: 8px; height: 8px;
@@ -1018,9 +1015,9 @@ body::before {
       <div class="grade-progress-mini"><div class="grade-progress-fill" id="headerProgressBar" style="width:2%;background:#cc2222"></div></div>
     </div>
     <nav class="nav-tabs">
-      <div class="nav-tab active" onclick="switchTab('roster')">Roster</div>
+      <div class="nav-tab active" onclick="switchTab('roster')">My Roster</div>
       <div class="nav-tab" onclick="switchTab('trade')">Trade Builder</div>
-      <div class="nav-tab" id="inboxTab" onclick="switchTab('inbox')">Inbox <span class="inbox-dot" id="inboxDot"></span></div>
+      <div class="nav-tab" onclick="switchTab('inbox')">Inbox <span class="inbox-dot" id="inboxDot"></span></div>
       <div class="nav-tab" onclick="switchTab('league')">League</div>
     </nav>
   </div>
@@ -1203,6 +1200,15 @@ body::before {
         <div class="grade-steps">
           <span>D−</span><span>D</span><span>C</span><span>B</span><span>A−</span><span>A+</span>
         </div>
+      </div>
+
+      <!-- ADVANCE WEEK -->
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+          <span style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted)">Season Progress</span>
+          <span id="weekBadge" style="font-size:12px;font-weight:700;color:var(--orange);font-family:'Courier New',monospace;background:rgba(255,107,0,0.1);padding:2px 9px;border-radius:4px;border:1px solid rgba(255,107,0,0.3)">WEEK 1</span>
+        </div>
+        <button onclick="advanceWeek()" style="width:100%;background:linear-gradient(135deg,#1a3a1a,#0f280f);border:1px solid #2d7a2d;color:#3db33d;padding:11px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:0.5px;transition:background 0.2s;" onmouseover="this.style.background='linear-gradient(135deg,#1e4a1e,#122e12)'" onmouseout="this.style.background='linear-gradient(135deg,#1a3a1a,#0f280f)'">⏭ ADVANCE TO NEXT WEEK</button>
       </div>
 
       <!-- INBOX PREVIEW -->
@@ -1462,10 +1468,11 @@ function generateDMinusRoster() {
       {...PLAYERS.find(p=>p.id==='p118'), injured:true, returnWeek:12}, // Dalton Kincaid
     ].filter(Boolean),
     taxi: [
-      {...PLAYERS.find(p=>p.id==='p90')}, // Quinshon Judkins
-      {...PLAYERS.find(p=>p.id==='p91')}, // Kaleb Johnson
-      {...PLAYERS.find(p=>p.id==='p54')}, // Jack Bech
-      {...PLAYERS.find(p=>p.id==='p55')}, // Luther Burden III
+      // Rank 20-40 rookies only — never top-15 dynasty assets on D- taxi
+      {...PLAYERS.find(p=>p.id==='p92')}, // Cam Skattebo RB NYG (~1900)
+      {...PLAYERS.find(p=>p.id==='p93')}, // Bhayshul Tuten RB JAX (~2100)
+      {...PLAYERS.find(p=>p.id==='p57')}, // Kyle Williams WR NE (~2000)
+      {...PLAYERS.find(p=>p.id==='p54')}, // Jack Bech WR LV (~2700)
     ].filter(Boolean),
     picks: [
       {...PICKS_DB.find(p=>p.id==='pick_2026_3'), id:'dp_2026_3a'},
@@ -1568,64 +1575,65 @@ function evaluateTrade(offeredAssets, requestedAssets, gmPersonality) {
 }
 
 // Generate a proactive offer from an AI GM toward the human player
-function tryGenerateProactiveOffer(gm, gmRoster, humanRoster) {
-  const humanPlayers = humanRoster.starters || [];
-  const humanPicks   = humanRoster.picks || [];
-  const gmPlayers    = gmRoster.starters || [];
-  const gmPicks      = gmRoster.picks || [];
-
-  switch(gm.personality) {
-    case 'pick_seller': {
-      const targets = humanPlayers.filter(p=>p.value>=3000).sort((a,b)=>b.value-a.value);
-      if (!targets.length) return null;
-      const target = targets[Math.floor(Math.random()*Math.min(3,targets.length))];
-      const avail1sts = gmPicks.filter(p=>p.round===1).slice(0,2);
-      if (!avail1sts.length) return null;
-      const offerVal = avail1sts.reduce((s,p)=>s+p.value,0);
-      if (offerVal < target.value * 0.65) return null;
-      return {from:gm.id, youGive:[target], youGet:avail1sts,
-        msg:`Hey, I want ${target.name} (${target.value} KTC). Offering you ${avail1sts.map(p=>p.name).join(' + ')}. What do you say?`};
-    }
-    case 'firesale': {
-      const aging = gmPlayers.filter(p=>p.age>=30).sort((a,b)=>b.value-a.value);
-      if (!aging.length) return null;
-      const offer = aging[0];
-      if (!humanPicks.length) return null;
-      const cheapPick = [...humanPicks].sort((a,b)=>a.value-b.value)[0];
-      return {from:gm.id, youGive:[cheapPick], youGet:[offer],
-        msg:`Firesale! I need to move ${offer.name} (age ${offer.age}). Your ${cheapPick.name} and we have a deal.`};
-    }
-    case 'aggressive': {
-      const humanVets = humanPlayers.filter(p=>p.value>=2500).sort((a,b)=>b.value-a.value);
-      if (!humanVets.length) return null;
-      const target = humanVets[Math.floor(Math.random()*Math.min(4,humanVets.length))];
-      const gmOffer = gmPlayers.filter(p=>p.value<=5000&&p.value>=1500).sort((a,b)=>b.value-a.value).slice(0,2);
-      if (!gmOffer.length) return null;
-      return {from:gm.id, youGive:[target], youGet:gmOffer,
-        msg:`What's it take for ${target.name}? I've got ${gmOffer.map(p=>p.name).join(' + ')} ready to go. Let's make a deal.`};
-    }
-    case 'rebuilder': {
-      const humanAging = humanPlayers.filter(p=>p.age>=29).sort((a,b)=>b.value-a.value);
-      if (!humanAging.length) return null;
-      const target = humanAging[0];
-      const bestPick = gmPicks.sort((a,b)=>b.value-a.value)[0];
-      if (!bestPick || bestPick.value < target.value * 0.58) return null;
-      return {from:gm.id, youGive:[target], youGet:[bestPick],
-        msg:`I'll give ${target.name} a good home. I'm offering my ${bestPick.name} (${bestPick.value} KTC). Good value to start your rebuild.`};
-    }
-    case 'win_now': {
-      const topHuman = humanPlayers.filter(p=>p.value>=4000).sort((a,b)=>b.value-a.value);
-      if (!topHuman.length) return null;
-      const target = topHuman[0];
-      const offerPicks = gmPicks.sort((a,b)=>b.value-a.value).slice(0,2);
-      const offerPlayers = gmPlayers.filter(p=>p.value>=2000&&p.value<=target.value*0.7).slice(0,1);
-      const youGet = [...offerPicks, ...offerPlayers];
-      if (!youGet.length) return null;
-      return {from:gm.id, youGive:[target], youGet,
-        msg:`I NEED ${target.name} for my championship run. Offering ${youGet.map(a=>a.name).join(' + ')}. Let's talk.`};
-    }
-    default: return null;
+function buildFairBundle(gPlayers,gPicks,targetV,prefer,tol){
+  tol=tol||0.13;const minV=targetV*(1-tol),maxV=targetV*(1+tol);
+  const picks=[...gPicks].sort((a,b)=>b.value-a.value);
+  const players=[...gPlayers].sort((a,b)=>b.value-a.value);
+  const pool=prefer==='picks'?[...picks,...players]:prefer==='players'?[...players,...picks]:[...players,...picks];
+  for(const a of pool){if(a.value>=minV&&a.value<=maxV)return[a];}
+  for(let i=0;i<pool.length;i++){for(let j=i+1;j<pool.length;j++){const v=pool[i].value+pool[j].value;if(v>=minV&&v<=maxV)return[pool[i],pool[j]];}}
+  let bundle=[],total=0;
+  for(const a of pool){if(total+a.value<=maxV){bundle.push(a);total+=a.value;}if(total>=minV)return bundle;}
+  return null;
+}
+function offerIsFair(give,get){
+  const gv=give.reduce((s,a)=>s+(a.value||0),0);
+  const rv=get.reduce((s,a)=>s+(a.value||0),0);
+  if(gv<500)return false;
+  const r=rv/gv;return r>=0.80&&r<=1.20;
+}
+function tryGenerateProactiveOffer(gm,gmRoster,humanRoster){
+  const hP=[...(humanRoster.starters||[])].sort((a,b)=>b.value-a.value);
+  const hPk=[...(humanRoster.picks||[])].sort((a,b)=>b.value-a.value);
+  const gP=[...(gmRoster.starters||[])].sort((a,b)=>b.value-a.value);
+  const gPk=[...(gmRoster.picks||[])].sort((a,b)=>b.value-a.value);
+  let offer=null;
+  switch(gm.personality){
+    case 'pick_seller':{
+      const targets=hP.filter(p=>p.value>=2500);if(!targets.length)break;
+      const target=targets[Math.floor(Math.random()*Math.min(3,targets.length))];
+      const bundle=buildFairBundle(gP,gPk,target.value,'picks',0.12);if(!bundle)break;
+      offer={from:gm.id,youGive:[target],youGet:bundle,msg:`Looking to add ${target.name} to my squad. Offering ${bundle.map(a=>a.name).join(' + ')} — fair KTC return.`};break;}
+    case 'win_now':{
+      const targets=hP.filter(p=>p.value>=3000);if(!targets.length)break;
+      const target=targets[0];
+      const bundle=buildFairBundle(gP,gPk,target.value,'mixed',0.12);if(!bundle)break;
+      offer={from:gm.id,youGive:[target],youGet:bundle,msg:`I need ${target.name} for my championship run. Sending ${bundle.map(a=>a.name).join(' + ')} your way.`};break;}
+    case 'firesale':{
+      const aging=gP.filter(p=>p.age>=30).sort((a,b)=>b.value-a.value);if(!aging.length)break;
+      const dump=aging[Math.floor(Math.random()*Math.min(2,aging.length))];
+      const want=buildFairBundle(hP,hPk,dump.value,'picks',0.15);if(!want)break;
+      offer={from:gm.id,youGive:want,youGet:[dump],msg:`Firesale — ${dump.name} (age ${dump.age}) needs a new home. I want ${want.map(a=>a.name).join(' + ')} back.`};break;}
+    case 'aggressive':{
+      if(!hP.length)break;
+      const target=hP[Math.floor(Math.random()*Math.min(5,hP.length))];
+      const bundle=buildFairBundle(gP,gPk,target.value,'mixed',0.13);if(!bundle)break;
+      offer={from:gm.id,youGive:[target],youGet:bundle,msg:`What's it take for ${target.name}? Putting ${bundle.map(a=>a.name).join(' + ')} on the table.`};break;}
+    case 'rebuilder':{
+      const aging=hP.filter(p=>p.age>=29);if(!aging.length)break;
+      const target=aging[Math.floor(Math.random()*Math.min(2,aging.length))];
+      const bundle=buildFairBundle(gP,gPk,target.value,'picks',0.12);if(!bundle)break;
+      offer={from:gm.id,youGive:[target],youGet:bundle,msg:`${target.name} fits my timeline. Offering ${bundle.map(a=>a.name).join(' + ')} — future capital for your rebuild.`};break;}
+    case 'negotiator':{
+      if(!hP.length)break;
+      const target=hP[Math.floor(Math.random()*Math.min(4,hP.length))];
+      const bundle=buildFairBundle(gP,gPk,target.value,'mixed',0.10);if(!bundle)break;
+      offer={from:gm.id,youGive:[target],youGet:bundle,msg:`Opening on ${target.name}: ${bundle.map(a=>a.name).join(' + ')}. Counter me.`};break;}
+    default:break;
   }
+  if(!offer)return null;
+  if(!offerIsFair(offer.youGive,offer.youGet))return null;
+  return offer;
 }
 </script>
 <script>
@@ -1789,8 +1797,9 @@ function espnHeadshotUrl(espnId) {
   return `https://a.espncdn.com/i/headshots/nfl/players/full/${espnId}.png`;
 }
 
+function getInitials(n){const p=n.replace(/[\u2018\u2019']/g,'').split(' ').filter(Boolean);return p.length>=2?(p[0][0]+p[p.length-1][0]).toUpperCase():(p[0]||'?')[0].toUpperCase();}
 function renderPlayerCard(asset, clickable, isSelected, context) {
-  const isPick = asset.id && asset.id.startsWith('pick') || asset.year;
+  const isPick = (asset.id && asset.id.startsWith('pick')) || asset.year;
   if (isPick) return renderPickCard(asset, clickable, isSelected, context);
 
   const gi = playerGradeInfo(asset.value);
@@ -1801,10 +1810,7 @@ function renderPlayerCard(asset, clickable, isSelected, context) {
   return `<div class="player-card ${sel} ${inj}" ${onClick} data-id="${asset.id}">
     ${asset.injured ? '<div class="injury-badge">IR</div>' : (asset.rookie ? '<div class="rookie-badge">ROOKIE</div>' : '')}
     <div class="player-card-top">
-      <img class="player-headshot" 
-        src="${espnHeadshotUrl(asset.espnId)}"
-        onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2244%22 height=%2244%22><rect width=%2244%22 height=%2244%22 fill=%22%23222%22 rx=%2222%22/><text x=%2222%22 y=%2228%22 text-anchor=%22middle%22 fill=%22%23666%22 font-size=%2216%22>${asset.pos}</text></svg>'"
-        alt="${asset.name}" loading="lazy"/>
+      <div class="player-avatar avatar-${asset.pos}">${getInitials(asset.name)}</div>
       <div class="player-info">
         <div class="player-name">${asset.name}</div>
         <div class="player-meta">${asset.team || ''} · Age ${asset.age || '?'}</div>
@@ -1830,19 +1836,35 @@ function renderPickCard(pick, clickable, isSelected, context) {
   </div>`;
 }
 
+const POS_ORDER=['QB','RB','WR','TE'];
+const POS_META={QB:{label:'QUARTERBACKS',color:'var(--pos-qb)'},RB:{label:'RUNNING BACKS',color:'var(--pos-rb)'},WR:{label:'WIDE RECEIVERS',color:'var(--pos-wr)'},TE:{label:'TIGHT ENDS',color:'var(--pos-te)'}};
+
+function renderGroupedCards(items,context){
+  if(!items.length)return'';
+  const byPos={};POS_ORDER.forEach(p=>byPos[p]=[]);
+  items.forEach(p=>{if(byPos[p.pos])byPos[p.pos].push(p);});
+  let html='';
+  POS_ORDER.forEach(pos=>{
+    const group=byPos[pos];if(!group.length)return;
+    const m=POS_META[pos];
+    const bg=m.color.replace('var(--pos-qb)','rgba(139,92,246,0.12)').replace('var(--pos-rb)','rgba(34,197,94,0.1)').replace('var(--pos-wr)','rgba(59,130,246,0.1)').replace('var(--pos-te)','rgba(249,115,22,0.1)');
+    html+=`<div class="pos-divider"><span class="pos-divider-label" style="color:${m.color};background:${bg};">${m.label}</span><div class="pos-divider-line" style="background:${m.color}"></div></div>`;
+    html+=group.map(p=>renderPlayerCard(p,true,STATE.selectedForTrade.includes(p.id),context)).join('');
+  });
+  return html;
+}
+
 function renderRosterZones() {
   const starters = STATE.humanRoster?.starters || [];
   const sorted = [...starters].sort((a,b)=>(b.value||0)-(a.value||0));
-
   const zones = {redzone:[], midfield:[], own20:[]};
   sorted.forEach(p => zones[getZone(p.value)].push(p));
-
   ['redzone','midfield','own20'].forEach(zone => {
     const grid = document.getElementById(`${zone}-grid`);
     const count = document.getElementById(`${zone}-count`);
     const items = zones[zone];
     count.textContent = `${items.length} asset${items.length!==1?'s':''}`;
-    grid.innerHTML = items.map(p => renderPlayerCard(p, true, STATE.selectedForTrade.includes(p.id), 'roster')).join('');
+    grid.innerHTML = items.length ? renderGroupedCards(items,'roster') : '<p style="color:var(--muted);font-size:13px;padding:8px 0">No assets in this zone.</p>';
   });
 }
 
@@ -1895,11 +1917,27 @@ function renderPartnerRoster(gmId) {
 // ====================================================
 function updateInboxBadge() {
   const unread = STATE.inbox.filter(o=>!o.read).length;
-  document.getElementById('inboxCount').textContent = unread || STATE.inbox.length;
+  const el = document.getElementById('inboxCount');
+  if(el) el.textContent = unread || STATE.inbox.length;
   const dot = document.getElementById('inboxDot');
-  dot.style.display = unread > 0 ? 'inline-block' : 'none';
-  const tab = document.getElementById('inboxTab');
-  tab.innerHTML = `Inbox ${unread > 0 ? '<span class="inbox-dot" id="inboxDot"></span>' : '<span class="inbox-dot" id="inboxDot" style="display:none"></span>'}`;
+  if(dot) dot.style.display = unread > 0 ? 'inline-block' : 'none';
+}
+
+function advanceWeek() {
+  STATE.week++;
+  const wb = document.getElementById('weekBadge');
+  if(wb) wb.textContent = 'WEEK '+STATE.week;
+  STATE.inbox.forEach(o=>o.read=true);
+  let newOffers=0;
+  const shuffled=[...AI_GMS].sort(()=>Math.random()-0.5);
+  for(const gm of shuffled){
+    if(newOffers>=3)break;
+    if(Math.random()>gm.tradeFreq)continue;
+    const offer=tryGenerateProactiveOffer(gm,STATE.gmRosters[gm.id],STATE.humanRoster);
+    if(offer){offer.id=nextOfferId();offer.timestamp=Date.now();offer.read=false;STATE.inbox.unshift(offer);newOffers++;}
+  }
+  showToast('⏭ Week '+STATE.week+' — New offers incoming',newOffers+' AI GM'+(newOffers!==1?'s':'')+' sent you trade proposals.','info');
+  renderInboxPreview();renderInboxFull();updateInboxBadge();
 }
 
 function renderOfferCard(offer, isPreview) {
