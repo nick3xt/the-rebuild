@@ -1,0 +1,2299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Rebuild — Dynasty Football Simulator</title>
+<style>
+:root {
+  --bg: #0a0a0a;
+  --surface: #111111;
+  --surface2: #171717;
+  --surface3: #1e1e1e;
+  --border: #2a2a2a;
+  --green: #1a4d1a;
+  --green-bright: #2d7a2d;
+  --green-glow: #3db33d;
+  --orange: #FF6B00;
+  --orange-dim: #cc5500;
+  --white: #f5f5f5;
+  --muted: #888;
+  --red: #cc2222;
+  --pos-qb: #8b5cf6;
+  --pos-rb: #22c55e;
+  --pos-wr: #3b82f6;
+  --pos-te: #f97316;
+  --grade-f: #cc2222;
+  --grade-d: #e05500;
+  --grade-c: #cc9900;
+  --grade-b: #88cc00;
+  --grade-a: #22aa00;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--white);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* TURF BACKGROUND */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 59px,
+      rgba(255,255,255,0.018) 59px,
+      rgba(255,255,255,0.018) 60px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 59px,
+      rgba(255,255,255,0.009) 59px,
+      rgba(255,255,255,0.009) 60px
+    );
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* YARD LINE DIVIDERS */
+.yard-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(45,122,45,0.3) 20%, rgba(45,122,45,0.3) 80%, transparent);
+  margin: 0;
+  position: relative;
+}
+.yard-divider::before {
+  content: attr(data-label);
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%) translateY(-50%);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  color: rgba(45,122,45,0.5);
+  text-transform: uppercase;
+  background: var(--bg);
+  padding: 0 12px;
+}
+
+/* HEADER */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(10,10,10,0.95);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 20px;
+}
+.header-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  height: 60px;
+}
+.logo {
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+  color: var(--orange);
+  text-transform: uppercase;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.logo span { color: var(--white); }
+.header-team {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+.team-name-input {
+  background: transparent;
+  border: none;
+  color: var(--white);
+  font-size: 16px;
+  font-weight: 700;
+  outline: none;
+  cursor: pointer;
+  max-width: 200px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.team-name-input:focus {
+  border-bottom: 1px solid var(--orange);
+  cursor: text;
+}
+.grade-badge-header {
+  font-size: 22px;
+  font-weight: 900;
+  padding: 2px 10px;
+  border-radius: 6px;
+  font-family: 'Courier New', monospace;
+  border: 2px solid;
+  letter-spacing: -0.5px;
+  flex-shrink: 0;
+}
+.grade-progress-mini {
+  flex: 1;
+  height: 6px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+  max-width: 200px;
+}
+.grade-progress-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.6s ease, background 0.6s ease;
+}
+.nav-tabs {
+  display: flex;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.nav-tab {
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  color: var(--muted);
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.nav-tab:hover { color: var(--white); border-color: var(--border); }
+.nav-tab.active { background: var(--orange); color: white; border-color: var(--orange); }
+.inbox-dot {
+  display: inline-block;
+  width: 8px; height: 8px;
+  background: var(--orange);
+  border-radius: 50%;
+  margin-left: 4px;
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0%,100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.2); }
+}
+
+/* MAIN LAYOUT */
+.main-wrap {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px;
+  position: relative;
+  z-index: 1;
+}
+.layout-grid {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 20px;
+  align-items: start;
+}
+@media (max-width: 1024px) {
+  .layout-grid { grid-template-columns: 1fr; }
+}
+
+/* PANELS */
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ZONE SECTION */
+.zone-section {
+  margin-bottom: 4px;
+}
+.zone-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0 8px;
+}
+.zone-label {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.zone-count {
+  font-size: 11px;
+  color: var(--border);
+  border: 1px solid var(--border);
+  padding: 1px 7px;
+  border-radius: 10px;
+}
+
+/* PLAYER CARD — SCOUTING REPORT STYLE */
+.players-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+  padding-bottom: 8px;
+}
+.player-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+  user-select: none;
+}
+.player-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--orange);
+  box-shadow: 0 4px 20px rgba(255,107,0,0.15);
+}
+.player-card.selected {
+  border-color: var(--orange);
+  background: rgba(255,107,0,0.08);
+  box-shadow: 0 0 0 2px rgba(255,107,0,0.3);
+}
+.player-card.injured {
+  border-color: var(--red);
+  opacity: 0.8;
+}
+.player-card-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.player-headshot {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--surface3);
+  flex-shrink: 0;
+  border: 2px solid var(--border);
+}
+.player-headshot.loaded { border-color: var(--green-bright); }
+.player-info { flex: 1; min-width: 0; }
+.player-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--white);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
+  letter-spacing: -0.3px;
+}
+.player-meta {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+.pos-badge {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+}
+.pos-QB { background: rgba(139,92,246,0.2); color: var(--pos-qb); border: 1px solid rgba(139,92,246,0.3); }
+.pos-RB { background: rgba(34,197,94,0.15); color: var(--pos-rb); border: 1px solid rgba(34,197,94,0.2); }
+.pos-WR { background: rgba(59,130,246,0.15); color: var(--pos-wr); border: 1px solid rgba(59,130,246,0.2); }
+.pos-TE { background: rgba(249,115,22,0.15); color: var(--pos-te); border: 1px solid rgba(249,115,22,0.2); }
+.pos-PICK { background: rgba(234,179,8,0.15); color: #eab308; border: 1px solid rgba(234,179,8,0.2); }
+
+.player-card-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.player-value {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  font-family: 'Courier New', monospace;
+}
+.player-grade-stamp {
+  font-size: 13px;
+  font-weight: 900;
+  font-family: 'Courier New', monospace;
+  padding: 2px 7px;
+  border-radius: 4px;
+  border: 1.5px solid;
+  transform: rotate(-2deg);
+  display: inline-block;
+}
+.injury-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: var(--red);
+  color: white;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 3px;
+  letter-spacing: 0.5px;
+}
+.rookie-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: rgba(234,179,8,0.2);
+  color: #eab308;
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 3px;
+  letter-spacing: 0.5px;
+  border: 1px solid rgba(234,179,8,0.3);
+}
+
+/* PICK CARD */
+.pick-card {
+  background: linear-gradient(135deg, var(--surface) 0%, rgba(26,77,26,0.15) 100%);
+  border: 1px solid rgba(45,122,45,0.3);
+  border-radius: 10px;
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.pick-card:hover {
+  border-color: var(--orange);
+  transform: translateY(-2px);
+}
+.pick-card.selected {
+  border-color: var(--orange);
+  box-shadow: 0 0 0 2px rgba(255,107,0,0.3);
+}
+.pick-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--white);
+}
+.pick-value {
+  font-size: 12px;
+  color: #eab308;
+  font-weight: 600;
+  margin-top: 4px;
+  font-family: 'Courier New', monospace;
+}
+
+/* RIGHT SIDEBAR */
+.sidebar { display: flex; flex-direction: column; gap: 16px; }
+
+/* INBOX */
+.inbox-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.inbox-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.inbox-title {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--white);
+}
+.inbox-badge {
+  background: var(--orange);
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 10px;
+  min-width: 22px;
+  text-align: center;
+}
+
+.offer-item {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background 0.15s;
+  position: relative;
+}
+.offer-item:last-child { border-bottom: none; }
+.offer-item:hover { background: var(--surface2); }
+.offer-item.read { opacity: 0.6; }
+.offer-gm-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.offer-avatar {
+  font-size: 18px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface3);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.offer-gm-info { flex: 1; min-width: 0; }
+.offer-gm-name { font-size: 12px; font-weight: 700; color: var(--white); }
+.offer-gm-tag { font-size: 10px; color: var(--orange); font-weight: 600; }
+.offer-message {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.4;
+  margin-bottom: 8px;
+}
+.offer-assets {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 11px;
+}
+.offer-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.offer-label {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  width: 55px;
+  flex-shrink: 0;
+}
+.offer-assets-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+}
+.offer-asset-chip {
+  background: var(--surface3);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--white);
+}
+.offer-value-compare {
+  margin-top: 8px;
+  padding: 8px;
+  background: var(--surface3);
+  border-radius: 6px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 11px;
+}
+.value-block { text-align: center; flex: 1; }
+.value-num { font-family: 'Courier New', monospace; font-weight: 700; font-size: 14px; }
+.value-lbl { color: var(--muted); font-size: 10px; text-transform: uppercase; margin-top: 2px; }
+.vs-sep { color: var(--muted); font-size: 12px; font-weight: 700; }
+.offer-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+}
+.btn-accept {
+  flex: 1;
+  background: var(--green-bright);
+  color: white;
+  border: none;
+  padding: 7px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.btn-accept:hover { background: var(--green-glow); }
+.btn-reject {
+  flex: 1;
+  background: transparent;
+  color: var(--red);
+  border: 1px solid var(--red);
+  padding: 7px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-reject:hover { background: rgba(204,34,34,0.1); }
+.unread-dot {
+  width: 8px; height: 8px;
+  background: var(--orange);
+  border-radius: 50%;
+  position: absolute;
+  top: 16px; right: 16px;
+}
+
+/* GRADE CARD */
+.grade-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+}
+.grade-card-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+.grade-display {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+.grade-big {
+  font-size: 52px;
+  font-weight: 900;
+  font-family: 'Courier New', monospace;
+  line-height: 1;
+  letter-spacing: -2px;
+}
+.grade-stats {
+  flex: 1;
+}
+.grade-stat {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  margin-bottom: 4px;
+  color: var(--muted);
+}
+.grade-stat strong { color: var(--white); font-family: 'Courier New', monospace; }
+.grade-progress-track {
+  height: 8px;
+  background: var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+.grade-progress-inner {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.8s cubic-bezier(0.4,0,0.2,1), background 0.6s;
+}
+.grade-steps {
+  display: flex;
+  justify-content: space-between;
+  font-size: 9px;
+  color: var(--muted);
+  font-family: 'Courier New', monospace;
+  font-weight: 700;
+}
+
+/* TRADE BUILDER */
+.trade-builder {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.trade-builder-header {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.trade-builder-title {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.trade-target-select {
+  background: var(--surface3);
+  border: 1px solid var(--border);
+  color: var(--white);
+  font-size: 12px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  outline: none;
+  cursor: pointer;
+}
+.trade-side {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.trade-side-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+.trade-slots {
+  min-height: 48px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px;
+  background: var(--surface2);
+  border-radius: 8px;
+  border: 1px dashed var(--border);
+}
+.trade-slot-chip {
+  background: var(--surface3);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.trade-chip-remove {
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1;
+  transition: color 0.15s;
+}
+.trade-chip-remove:hover { color: var(--red); }
+.trade-slot-empty {
+  color: var(--muted);
+  font-size: 12px;
+  font-style: italic;
+  padding: 8px 0;
+  width: 100%;
+  text-align: center;
+}
+.trade-value-bar {
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.trade-val-block { text-align: center; flex: 1; }
+.trade-val-num {
+  font-family: 'Courier New', monospace;
+  font-size: 18px;
+  font-weight: 700;
+}
+.trade-val-lbl { font-size: 10px; color: var(--muted); text-transform: uppercase; margin-top: 2px; }
+.trade-fairness {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 4px;
+  border: 1px solid;
+  font-family: 'Courier New', monospace;
+  white-space: nowrap;
+}
+.fairness-fair { color: var(--green-glow); border-color: var(--green-bright); }
+.fairness-ok { color: #eab308; border-color: rgba(234,179,8,0.3); }
+.fairness-bad { color: var(--red); border-color: rgba(204,34,34,0.3); }
+.trade-submit {
+  margin: 0 16px 16px;
+  width: calc(100% - 32px);
+  background: var(--orange);
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+  letter-spacing: 0.5px;
+}
+.trade-submit:hover { background: #e06000; transform: translateY(-1px); }
+.trade-submit:active { transform: translateY(0); }
+.trade-submit:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; transform: none; }
+
+/* STANDINGS TABLE */
+.standings-table {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.standings-table table { width: 100%; border-collapse: collapse; }
+.standings-table th {
+  background: var(--surface2);
+  padding: 10px 14px;
+  text-align: left;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+}
+.standings-table td {
+  padding: 10px 14px;
+  font-size: 13px;
+  border-bottom: 1px solid var(--border);
+}
+.standings-table tr:last-child td { border-bottom: none; }
+.standings-table tr:hover td { background: var(--surface2); }
+.standings-table tr.you td { background: rgba(255,107,0,0.05); }
+.standings-table tr.you td:first-child { border-left: 3px solid var(--orange); }
+
+/* TOAST */
+.toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.toast {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 18px;
+  min-width: 280px;
+  max-width: 380px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  animation: slideIn 0.3s ease;
+  border-left: 3px solid var(--orange);
+}
+.toast.success { border-left-color: var(--green-glow); }
+.toast.error { border-left-color: var(--red); }
+.toast-title { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+.toast-msg { font-size: 12px; color: var(--muted); line-height: 1.4; }
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* MODAL */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  backdrop-filter: blur(4px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+  max-width: 480px;
+  width: 100%;
+  transform: scale(0.95);
+  transition: transform 0.2s;
+}
+.modal-overlay.open .modal { transform: scale(1); }
+.modal-title { font-size: 18px; font-weight: 800; margin-bottom: 8px; }
+.modal-sub { font-size: 14px; color: var(--muted); margin-bottom: 20px; line-height: 1.5; }
+.modal-actions { display: flex; gap: 10px; }
+.btn-primary {
+  flex: 1;
+  background: var(--orange);
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.btn-primary:hover { background: #e06000; }
+.btn-ghost {
+  padding: 12px 20px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-ghost:hover { border-color: var(--white); color: var(--white); }
+
+/* TRADE RESULT */
+.trade-result-banner {
+  padding: 14px 16px;
+  border-radius: 10px;
+  margin-bottom: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.trade-result-banner.accept { background: rgba(45,122,45,0.2); border: 1px solid var(--green-bright); color: var(--green-glow); }
+.trade-result-banner.reject { background: rgba(204,34,34,0.15); border: 1px solid var(--red); color: #ff6666; }
+.trade-result-banner.counter { background: rgba(234,179,8,0.1); border: 1px solid rgba(234,179,8,0.3); color: #eab308; }
+
+/* WELCOME SCREEN */
+.welcome-screen {
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.welcome-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 40px;
+  max-width: 500px;
+  width: 100%;
+  text-align: center;
+}
+.welcome-logo {
+  font-size: 42px;
+  font-weight: 900;
+  letter-spacing: -2px;
+  color: var(--orange);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.welcome-logo span { color: var(--white); }
+.welcome-sub {
+  font-size: 14px;
+  color: var(--muted);
+  margin-bottom: 28px;
+  line-height: 1.5;
+}
+.welcome-input {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--white);
+  font-size: 16px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  outline: none;
+  margin-bottom: 12px;
+  transition: border-color 0.2s;
+}
+.welcome-input:focus { border-color: var(--orange); }
+.welcome-start {
+  width: 100%;
+  background: var(--orange);
+  color: white;
+  border: none;
+  padding: 14px;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+  letter-spacing: 0.5px;
+  margin-top: 8px;
+}
+.welcome-start:hover { background: #e06000; }
+.welcome-rules {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  text-align: left;
+}
+.rule-item { }
+.rule-title { font-size: 11px; font-weight: 700; color: var(--orange); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 3px; }
+.rule-val { font-size: 12px; color: var(--muted); }
+
+/* EMPTY STATE */
+.empty-inbox {
+  padding: 32px 16px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+/* SECTION HEADER */
+.section-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+/* RECORD BADGE */
+.record-badge {
+  font-size: 12px;
+  color: var(--muted);
+  font-family: 'Courier New', monospace;
+}
+
+/* TAXI / IR TABS */
+.sub-tabs {
+  display: flex;
+  gap: 2px;
+  margin-bottom: 12px;
+}
+.sub-tab {
+  padding: 5px 14px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  color: var(--muted);
+  border: 1px solid transparent;
+  transition: all 0.2s;
+}
+.sub-tab:hover { color: var(--white); }
+.sub-tab.active { background: var(--surface2); border-color: var(--border); color: var(--white); }
+
+/* SCROLLABLE SIDEBAR */
+.sidebar-scroll { max-height: calc(100vh - 120px); overflow-y: auto; }
+.sidebar-scroll::-webkit-scrollbar { width: 4px; }
+.sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
+.sidebar-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+</style>
+</head>
+<body>
+<!-- WELCOME SCREEN -->
+<div class="welcome-screen" id="welcomeScreen">
+  <div class="welcome-card">
+    <div class="welcome-logo">The <span>Rebuild</span></div>
+    <p class="welcome-sub">Dynasty football rebuild simulator. SuperFlex PPR TEP. 10-team league.<br>You start at D−. Build to A+. Win the chip.</p>
+    <input class="welcome-input" id="teamNameInput" placeholder="Name your franchise..." maxlength="32" />
+    <div class="welcome-rules">
+      <div class="rule-item"><div class="rule-title">Format</div><div class="rule-val">SuperFlex PPR TEP</div></div>
+      <div class="rule-item"><div class="rule-title">Roster</div><div class="rule-val">20 + 4 IR + 4 Taxi</div></div>
+      <div class="rule-item"><div class="rule-title">League</div><div class="rule-val">10-team, Solo vs AI</div></div>
+      <div class="rule-item"><div class="rule-title">Win Condition</div><div class="rule-val">Grade A + Championship</div></div>
+    </div>
+    <button class="welcome-start" onclick="startGame()">START YOUR REBUILD →</button>
+  </div>
+</div>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-inner">
+    <div class="logo">The <span>Rebuild</span></div>
+    <div class="header-team">
+      <input type="text" class="team-name-input" id="headerTeamName" value="My Team" onchange="updateTeamName(this.value)" />
+      <div class="grade-badge-header" id="headerGrade" style="color:#cc2222;border-color:#cc2222">D−</div>
+      <div class="grade-progress-mini"><div class="grade-progress-fill" id="headerProgressBar" style="width:2%;background:#cc2222"></div></div>
+    </div>
+    <nav class="nav-tabs">
+      <div class="nav-tab active" onclick="switchTab('roster')">Roster</div>
+      <div class="nav-tab" onclick="switchTab('trade')">Trade Builder</div>
+      <div class="nav-tab" id="inboxTab" onclick="switchTab('inbox')">Inbox <span class="inbox-dot" id="inboxDot"></span></div>
+      <div class="nav-tab" onclick="switchTab('league')">League</div>
+    </nav>
+  </div>
+</header>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- TRADE RESULT MODAL -->
+<div class="modal-overlay" id="tradeModal">
+  <div class="modal">
+    <div id="tradeResultContent"></div>
+    <div class="modal-actions">
+      <button class="btn-primary" onclick="closeTradeModal()">GOT IT</button>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<main class="main-wrap">
+  <div class="layout-grid">
+    <!-- LEFT: MAIN CONTENT -->
+    <div class="main-content">
+
+      <!-- ROSTER TAB -->
+      <div class="tab-panel active" id="panel-roster">
+        <div class="sub-tabs">
+          <div class="sub-tab active" onclick="switchSubTab('starters')">Starters (20)</div>
+          <div class="sub-tab" onclick="switchSubTab('taxi')">Taxi Squad (4)</div>
+          <div class="sub-tab" onclick="switchSubTab('ir')">IR (4)</div>
+          <div class="sub-tab" onclick="switchSubTab('picks')">Picks</div>
+        </div>
+
+        <div id="subpanel-starters">
+          <!-- RED ZONE -->
+          <div class="zone-section">
+            <div class="yard-divider" data-label="RED ZONE — TOP ASSETS"></div>
+            <div class="zone-header">
+              <span class="zone-label">🔴 Red Zone</span>
+              <span class="zone-count" id="redzone-count">0 assets</span>
+            </div>
+            <div class="players-grid" id="redzone-grid"></div>
+          </div>
+
+          <!-- MIDFIELD -->
+          <div class="zone-section">
+            <div class="yard-divider" data-label="MIDFIELD — SOLID CONTRIBUTORS"></div>
+            <div class="zone-header">
+              <span class="zone-label">⚡ Midfield</span>
+              <span class="zone-count" id="midfield-count">0 assets</span>
+            </div>
+            <div class="players-grid" id="midfield-grid"></div>
+          </div>
+
+          <!-- OWN 20 -->
+          <div class="zone-section">
+            <div class="yard-divider" data-label="OWN 20 — REBUILD PIECES"></div>
+            <div class="zone-header">
+              <span class="zone-label">🏗️ Own 20</span>
+              <span class="zone-count" id="own20-count">0 assets</span>
+            </div>
+            <div class="players-grid" id="own20-grid"></div>
+          </div>
+        </div>
+
+        <div id="subpanel-taxi" style="display:none">
+          <div class="section-title">Taxi Squad — 2025 Rookies</div>
+          <div class="players-grid" id="taxi-grid"></div>
+        </div>
+
+        <div id="subpanel-ir" style="display:none">
+          <div class="section-title">Injured Reserve</div>
+          <div class="players-grid" id="ir-grid"></div>
+        </div>
+
+        <div id="subpanel-picks" style="display:none">
+          <div class="section-title">Draft Capital</div>
+          <div class="players-grid" id="picks-grid"></div>
+        </div>
+      </div>
+
+      <!-- TRADE BUILDER TAB -->
+      <div class="tab-panel" id="panel-trade">
+        <div class="section-title">Build a Trade</div>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:20px">Select players and picks from your roster below, choose a trade partner, then submit.</p>
+
+        <div class="trade-builder" style="margin-bottom:20px">
+          <div class="trade-builder-header">
+            <span class="trade-builder-title">Trade Builder</span>
+            <select class="trade-target-select" id="tradePartnerSelect" onchange="updateTradePartner()">
+              <option value="">— Select Trade Partner —</option>
+            </select>
+          </div>
+
+          <div class="trade-side">
+            <div class="trade-side-label">You Send</div>
+            <div class="trade-slots" id="youSendSlots">
+              <span class="trade-slot-empty">Click players/picks on your roster to add them here</span>
+            </div>
+          </div>
+
+          <div class="trade-side">
+            <div class="trade-side-label" id="youGetLabel">You Receive (from partner)</div>
+            <div class="trade-slots" id="youGetSlots">
+              <span class="trade-slot-empty">Select a trade partner to see their roster</span>
+            </div>
+          </div>
+
+          <div class="trade-value-bar">
+            <div class="trade-val-block">
+              <div class="trade-val-num" id="youSendValDisplay" style="color:var(--white)">0</div>
+              <div class="trade-val-lbl">Your Offer</div>
+            </div>
+            <div id="tradeFairness" class="trade-fairness fairness-ok">—</div>
+            <div class="trade-val-block">
+              <div class="trade-val-num" id="youGetValDisplay" style="color:var(--white)">0</div>
+              <div class="trade-val-lbl">You Receive</div>
+            </div>
+          </div>
+
+          <button class="trade-submit" id="tradeSubmitBtn" onclick="submitTrade()" disabled>SELECT PARTNER &amp; ASSETS</button>
+        </div>
+
+        <!-- Partner roster for selecting what to receive -->
+        <div id="partnerRosterSection" style="display:none">
+          <div class="section-title" id="partnerRosterTitle">Partner Roster</div>
+          <div class="players-grid" id="partner-roster-grid"></div>
+        </div>
+
+        <!-- Your roster for trade builder -->
+        <div class="section-title">Your Roster — Click to Add/Remove</div>
+        <div class="players-grid" id="trade-your-roster-grid"></div>
+      </div>
+
+      <!-- INBOX TAB -->
+      <div class="tab-panel" id="panel-inbox">
+        <div class="section-title">Trade Inbox — AI GM Offers</div>
+        <div id="inbox-full-list"></div>
+      </div>
+
+      <!-- LEAGUE TAB -->
+      <div class="tab-panel" id="panel-league">
+        <div class="section-title">League Standings</div>
+        <div class="standings-table">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Team</th>
+                <th>GM</th>
+                <th>Grade</th>
+                <th>KTC Value</th>
+                <th>W-L</th>
+              </tr>
+            </thead>
+            <tbody id="standingsBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT SIDEBAR -->
+    <div class="sidebar sidebar-scroll">
+
+      <!-- GRADE CARD -->
+      <div class="grade-card">
+        <div class="grade-card-title">Team Grade</div>
+        <div class="grade-display">
+          <div class="grade-big" id="sidebarGrade" style="color:#cc2222">D−</div>
+          <div class="grade-stats">
+            <div class="grade-stat">KTC Value <strong id="sidebarValue">0</strong></div>
+            <div class="grade-stat">Next Grade <strong id="sidebarNextGrade">D</strong></div>
+            <div class="grade-stat">Need <strong id="sidebarNeed">+25,000</strong></div>
+          </div>
+        </div>
+        <div class="grade-progress-track">
+          <div class="grade-progress-inner" id="sidebarProgressBar" style="width:2%;background:#cc2222"></div>
+        </div>
+        <div class="grade-steps">
+          <span>D−</span><span>D</span><span>C</span><span>B</span><span>A−</span><span>A+</span>
+        </div>
+      </div>
+
+      <!-- INBOX PREVIEW -->
+      <div class="inbox-card">
+        <div class="inbox-header">
+          <span class="inbox-title">Trade Offers</span>
+          <span class="inbox-badge" id="inboxCount">0</span>
+        </div>
+        <div id="inboxPreview">
+          <div class="empty-inbox">📭 No offers yet.<br>Start trading to get things moving.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>
+<script>
+// ====================================================
+// PLAYER DATABASE
+// ====================================================
+const PLAYERS = [
+  // QBs
+  {id:'p1',  name:'Josh Allen',        pos:'QB',team:'BUF',espnId:3054211,age:29,value:9997,rookie:false},
+  {id:'p2',  name:'Drake Maye',         pos:'QB',team:'NE', espnId:4430185,age:22,value:9486,rookie:false},
+  {id:'p3',  name:'Caleb Williams',     pos:'QB',team:'CHI',espnId:4432577,age:23,value:7813,rookie:false},
+  {id:'p4',  name:'Jayden Daniels',     pos:'QB',team:'WAS',espnId:4432580,age:23,value:7778,rookie:false},
+  {id:'p5',  name:'Lamar Jackson',      pos:'QB',team:'BAL',espnId:3916387,age:28,value:7756,rookie:false},
+  {id:'p6',  name:'Joe Burrow',         pos:'QB',team:'CIN',espnId:4040715,age:29,value:7508,rookie:false},
+  {id:'p7',  name:'Patrick Mahomes',    pos:'QB',team:'KC', espnId:3139477,age:30,value:6878,rookie:false},
+  {id:'p8',  name:'Justin Herbert',     pos:'QB',team:'LAC',espnId:4038941,age:27,value:6849,rookie:false},
+  {id:'p9',  name:'Jaxson Dart',        pos:'QB',team:'NYG',espnId:4700743,age:22,value:6666,rookie:true},
+  {id:'p10', name:'Jalen Hurts',        pos:'QB',team:'PHI',espnId:4040554,age:26,value:6261,rookie:false},
+  {id:'p11', name:'Bo Nix',             pos:'QB',team:'DEN',espnId:4432591,age:25,value:6260,rookie:false},
+  {id:'p12', name:'Trevor Lawrence',    pos:'QB',team:'JAX',espnId:4360310,age:25,value:6233,rookie:false},
+  {id:'p13', name:'Brock Purdy',        pos:'QB',team:'SF', espnId:4361741,age:25,value:5942,rookie:false},
+  {id:'p14', name:'Jordan Love',        pos:'QB',team:'GB', espnId:4040683,age:26,value:5694,rookie:false},
+  {id:'p15', name:'Fernando Mendoza',   pos:'QB',team:'IND',espnId:4700801,age:22,value:5584,rookie:true},
+  {id:'p16', name:'Cam Ward',           pos:'QB',team:'TEN',espnId:4700720,age:22,value:5200,rookie:true},
+  {id:'p17', name:'Michael Penix Jr',   pos:'QB',team:'ATL',espnId:4432768,age:24,value:3170,rookie:false},
+  {id:'p18', name:'Ty Simpson',         pos:'QB',team:'MIA',espnId:4700800,age:22,value:3563,rookie:true},
+  {id:'p19', name:'Will Howard',        pos:'QB',team:'PIT',espnId:4700802,age:23,value:2800,rookie:true},
+  {id:'p20', name:'Sam Darnold',        pos:'QB',team:'SEA',espnId:3917315,age:28,value:2200,rookie:false},
+  {id:'p21', name:'Kirk Cousins',       pos:'QB',team:'ATL',espnId:16757,  age:37,value:1800,rookie:false},
+  {id:'p22', name:'Geno Smith',         pos:'QB',team:'SEA',espnId:15864,  age:35,value:1500,rookie:false},
+  // WRs
+  {id:'p30', name:'Ja\'Marr Chase',     pos:'WR',team:'CIN',espnId:4372016,age:24,value:9914,rookie:false},
+  {id:'p31', name:'Jaxon Smith-Njigba', pos:'WR',team:'SEA',espnId:4432623,age:22,value:9881,rookie:false},
+  {id:'p32', name:'Puka Nacua',         pos:'WR',team:'LAR',espnId:4432576,age:24,value:8619,rookie:false},
+  {id:'p33', name:'Malik Nabers',       pos:'WR',team:'NYG',espnId:4432642,age:22,value:7890,rookie:false},
+  {id:'p34', name:'Amon-Ra St. Brown',  pos:'WR',team:'DET',espnId:4361529,age:25,value:7761,rookie:false},
+  {id:'p35', name:'Justin Jefferson',   pos:'WR',team:'MIN',espnId:4262921,age:25,value:7760,rookie:false},
+  {id:'p36', name:'CeeDee Lamb',        pos:'WR',team:'DAL',espnId:4241389,age:26,value:7356,rookie:false},
+  {id:'p37', name:'Drake London',       pos:'WR',team:'ATL',espnId:4426336,age:23,value:6904,rookie:false},
+  {id:'p38', name:'Tetairoa McMillan',  pos:'WR',team:'CAR',espnId:4700750,age:21,value:6701,rookie:true},
+  {id:'p39', name:'Emeka Egbuka',       pos:'WR',team:'TB', espnId:4700755,age:22,value:6122,rookie:true},
+  {id:'p40', name:'George Pickens',     pos:'WR',team:'PIT',espnId:4432782,age:24,value:5947,rookie:false},
+  {id:'p41', name:'Garrett Wilson',     pos:'WR',team:'NYJ',espnId:4426338,age:24,value:5799,rookie:false},
+  {id:'p42', name:'Chris Olave',        pos:'WR',team:'NO', espnId:4361428,age:24,value:5662,rookie:false},
+  {id:'p43', name:'Carnell Tate',       pos:'WR',team:'CHI',espnId:4700760,age:21,value:5648,rookie:true},
+  {id:'p44', name:'Nico Collins',       pos:'WR',team:'HOU',espnId:4241393,age:26,value:5637,rookie:false},
+  {id:'p45', name:'Ladd McConkey',      pos:'WR',team:'LAC',espnId:4432646,age:23,value:5390,rookie:false},
+  {id:'p46', name:'Travis Hunter',      pos:'WR',team:'JAX',espnId:4700765,age:21,value:3240,rookie:true},
+  {id:'p47', name:'Matthew Golden',     pos:'WR',team:'GB', espnId:4700770,age:22,value:3686,rookie:true},
+  {id:'p48', name:'Jayden Higgins',     pos:'WR',team:'HOU',espnId:4700775,age:22,value:3528,rookie:true},
+  {id:'p49', name:'DK Metcalf',         pos:'WR',team:'SEA',espnId:4035538,age:27,value:3646,rookie:false},
+  {id:'p50', name:'Terry McLaurin',     pos:'WR',team:'WAS',espnId:3915901,age:29,value:3481,rookie:false},
+  {id:'p51', name:'Mike Evans',         pos:'WR',team:'TB', espnId:16737,  age:32,value:3293,rookie:false},
+  {id:'p52', name:'Davante Adams',      pos:'WR',team:'NYJ',espnId:2976316,age:33,value:3489,rookie:false},
+  {id:'p53', name:'Jakobi Meyers',      pos:'WR',team:'LV', espnId:3916941,age:28,value:3247,rookie:false},
+  {id:'p54', name:'Jack Bech',          pos:'WR',team:'LV', espnId:4700780,age:22,value:2700,rookie:true},
+  {id:'p55', name:'Luther Burden III',  pos:'WR',team:'CHI',espnId:4700785,age:21,value:2600,rookie:true},
+  {id:'p56', name:'Tre Harris',         pos:'WR',team:'LAC',espnId:4700790,age:22,value:2400,rookie:true},
+  {id:'p57', name:'Kyle Williams',      pos:'WR',team:'NE', espnId:4700795,age:22,value:2000,rookie:true},
+  // RBs
+  {id:'p70', name:'Bijan Robinson',     pos:'RB',team:'ATL',espnId:4432575,age:23,value:9978,rookie:false},
+  {id:'p71', name:'Jahmyr Gibbs',       pos:'RB',team:'DET',espnId:4432619,age:23,value:9680,rookie:false},
+  {id:'p72', name:'Ashton Jeanty',      pos:'RB',team:'LV', espnId:4700700,age:21,value:7562,rookie:true},
+  {id:'p73', name:'Jeremiyah Love',     pos:'RB',team:'KC', espnId:4700705,age:21,value:7524,rookie:true},
+  {id:'p74', name:'De\'Von Achane',     pos:'RB',team:'MIA',espnId:4432570,age:23,value:6797,rookie:false},
+  {id:'p75', name:'Omarion Hampton',    pos:'RB',team:'LAC',espnId:4700710,age:21,value:6708,rookie:true},
+  {id:'p76', name:'Jonathan Taylor',    pos:'RB',team:'IND',espnId:4239993,age:26,value:6072,rookie:false},
+  {id:'p77', name:'James Cook',         pos:'RB',team:'BUF',espnId:4432572,age:24,value:6049,rookie:false},
+  {id:'p78', name:'Kenneth Walker III', pos:'RB',team:'SEA',espnId:4426513,age:25,value:5541,rookie:false},
+  {id:'p79', name:'TreVeyon Henderson', pos:'RB',team:'NE', espnId:4700715,age:23,value:5459,rookie:true},
+  {id:'p80', name:'RJ Harvey',          pos:'RB',team:'DEN',espnId:4700720,age:22,value:3760,rookie:true},
+  {id:'p81', name:'Zach Charbonnet',    pos:'RB',team:'SEA',espnId:4432588,age:25,value:3478,rookie:false},
+  {id:'p82', name:'D\'Andre Swift',     pos:'RB',team:'CHI',espnId:4240021,age:26,value:3580,rookie:false},
+  {id:'p83', name:'Kyle Monangai',      pos:'RB',team:'NYJ',espnId:4700722,age:22,value:3565,rookie:true},
+  {id:'p84', name:'Chuba Hubbard',      pos:'RB',team:'CAR',espnId:4240023,age:26,value:3377,rookie:false},
+  {id:'p85', name:'Derrick Henry',      pos:'RB',team:'NO', espnId:3054220,age:31,value:3806,rookie:false},
+  {id:'p86', name:'David Montgomery',   pos:'RB',team:'DET',espnId:3915507,age:27,value:3394,rookie:false},
+  {id:'p87', name:'Rico Dowdle',        pos:'RB',team:'DAL',espnId:4240600,age:27,value:3231,rookie:false},
+  {id:'p88', name:'Blake Corum',        pos:'RB',team:'LAR',espnId:4432590,age:24,value:3191,rookie:false},
+  {id:'p89', name:'Jaylen Warren',      pos:'RB',team:'PIT',espnId:4430734,age:26,value:3176,rookie:false},
+  {id:'p90', name:'Quinshon Judkins',   pos:'RB',team:'CLE',espnId:4700725,age:21,value:3100,rookie:true},
+  {id:'p91', name:'Kaleb Johnson',      pos:'RB',team:'PIT',espnId:4700726,age:21,value:2900,rookie:true},
+  {id:'p92', name:'Cam Skattebo',       pos:'RB',team:'NYG',espnId:4700727,age:22,value:1900,rookie:true},
+  {id:'p93', name:'Bhayshul Tuten',     pos:'RB',team:'JAX',espnId:4700728,age:22,value:2100,rookie:true},
+  {id:'p94', name:'Josh Jacobs',        pos:'RB',team:'GB', espnId:3915416,age:27,value:2800,rookie:false},
+  {id:'p95', name:'Saquon Barkley',     pos:'RB',team:'PHI',espnId:3929630,age:28,value:2600,rookie:false},
+  // TEs (+15% TEP bump applied)
+  {id:'p110',name:'Brock Bowers',       pos:'TE',team:'LV', espnId:4432600,age:22,value:10013,rookie:false},
+  {id:'p111',name:'Trey McBride',       pos:'TE',team:'ARI',espnId:4432601,age:25,value:9573,rookie:false},
+  {id:'p112',name:'Colston Loveland',   pos:'TE',team:'CHI',espnId:4700730,age:22,value:7726,rookie:true},
+  {id:'p113',name:'Tyler Warren',       pos:'TE',team:'IND',espnId:4700731,age:23,value:7253,rookie:true},
+  {id:'p114',name:'Tucker Kraft',       pos:'TE',team:'GB', espnId:4432602,age:24,value:6257,rookie:false},
+  {id:'p115',name:'Harold Fannin Jr',   pos:'TE',team:'CLE',espnId:4700732,age:22,value:6203,rookie:true},
+  {id:'p116',name:'George Kittle',      pos:'TE',team:'SF', espnId:3054209,age:31,value:4433,rookie:false},
+  {id:'p117',name:'Jake Ferguson',      pos:'TE',team:'DAL',espnId:4432603,age:25,value:4340,rookie:false},
+  {id:'p118',name:'Dalton Kincaid',     pos:'TE',team:'BUF',espnId:4432604,age:25,value:4242,rookie:false},
+  {id:'p119',name:'Mark Andrews',       pos:'TE',team:'BAL',espnId:3054206,age:29,value:3711,rookie:false},
+  {id:'p120',name:'Chigoziem Okonkwo',  pos:'TE',team:'TEN',espnId:4430300,age:26,value:3697,rookie:false},
+  {id:'p121',name:'TJ Hockenson',       pos:'TE',team:'MIN',espnId:3915430,age:27,value:3683,rookie:false},
+  {id:'p122',name:'Terrance Ferguson',  pos:'TE',team:'LAR',espnId:4700733,age:23,value:3677,rookie:true},
+  {id:'p123',name:'AJ Barner',          pos:'TE',team:'IND',espnId:4700734,age:23,value:3764,rookie:true},
+  {id:'p124',name:'Mason Taylor',       pos:'TE',team:'NYJ',espnId:4700735,age:22,value:3220,rookie:true},
+  {id:'p125',name:'Elijah Arroyo',      pos:'TE',team:'SEA',espnId:4700736,age:22,value:2070,rookie:true},
+];
+
+const PICKS_DB = [
+  {id:'pick_2025_1e',name:'2025 Early 1st', value:3500,year:2025,round:1,slot:'early'},
+  {id:'pick_2025_1m',name:'2025 Mid 1st',   value:2800,year:2025,round:1,slot:'mid'},
+  {id:'pick_2025_1l',name:'2025 Late 1st',  value:2200,year:2025,round:1,slot:'late'},
+  {id:'pick_2025_2', name:'2025 2nd',        value:1800,year:2025,round:2,slot:'mid'},
+  {id:'pick_2025_3', name:'2025 3rd',        value:1200,year:2025,round:3,slot:'mid'},
+  {id:'pick_2026_1e',name:'2026 Early 1st', value:5717,year:2026,round:1,slot:'early'},
+  {id:'pick_2026_1m',name:'2026 Mid 1st',   value:4800,year:2026,round:1,slot:'mid'},
+  {id:'pick_2026_1l',name:'2026 Late 1st',  value:4200,year:2026,round:1,slot:'late'},
+  {id:'pick_2026_2e',name:'2026 Early 2nd', value:3287,year:2026,round:2,slot:'early'},
+  {id:'pick_2026_2', name:'2026 2nd',        value:2800,year:2026,round:2,slot:'mid'},
+  {id:'pick_2026_3', name:'2026 3rd',        value:1600,year:2026,round:3,slot:'mid'},
+  {id:'pick_2026_4', name:'2026 4th',        value:900, year:2026,round:4,slot:'mid'},
+  {id:'pick_2027_1e',name:'2027 Early 1st', value:6916,year:2027,round:1,slot:'early'},
+  {id:'pick_2027_1m',name:'2027 Mid 1st',   value:5606,year:2027,round:1,slot:'mid'},
+  {id:'pick_2027_1l',name:'2027 Late 1st',  value:4800,year:2027,round:1,slot:'late'},
+  {id:'pick_2027_2e',name:'2027 Early 2nd', value:3828,year:2027,round:2,slot:'early'},
+  {id:'pick_2027_2', name:'2027 Mid 2nd',   value:3441,year:2027,round:2,slot:'mid'},
+  {id:'pick_2027_3', name:'2027 3rd',        value:1800,year:2027,round:3,slot:'mid'},
+  {id:'pick_2028_1l',name:'2028 Late 1st',  value:3848,year:2028,round:1,slot:'late'},
+];
+
+// Grade thresholds
+const GRADES = [
+  {grade:'D-',min:0,     max:25000, color:'#cc2222'},
+  {grade:'D', min:25000, max:35000, color:'#d03300'},
+  {grade:'D+',min:35000, max:45000, color:'#cc5500'},
+  {grade:'C-',min:45000, max:55000, color:'#cc7700'},
+  {grade:'C', min:55000, max:65000, color:'#cc9900'},
+  {grade:'C+',min:65000, max:75000, color:'#ccbb00'},
+  {grade:'B-',min:75000, max:85000, color:'#aacc00'},
+  {grade:'B', min:85000, max:95000, color:'#77cc00'},
+  {grade:'B+',min:95000, max:108000,color:'#55cc00'},
+  {grade:'A-',min:108000,max:120000,color:'#33bb00'},
+  {grade:'A', min:120000,max:135000,color:'#22aa00'},
+  {grade:'A+',min:135000,max:999999,color:'#119900'},
+];
+
+function getGradeInfo(totalValue) {
+  for (const g of GRADES) {
+    if (totalValue >= g.min && totalValue < g.max) return g;
+  }
+  return GRADES[GRADES.length - 1];
+}
+
+function playerGradeInfo(value) {
+  if (value >= 9000) return {grade:'A+',color:'#22aa00'};
+  if (value >= 7500) return {grade:'A', color:'#33bb00'};
+  if (value >= 6000) return {grade:'A-',color:'#44cc00'};
+  if (value >= 5000) return {grade:'B+',color:'#77cc00'};
+  if (value >= 4000) return {grade:'B', color:'#aacc00'};
+  if (value >= 3000) return {grade:'B-',color:'#ccbb00'};
+  if (value >= 2000) return {grade:'C+',color:'#cc9900'};
+  if (value >= 1500) return {grade:'C', color:'#cc7700'};
+  if (value >= 1000) return {grade:'C-',color:'#cc5500'};
+  if (value >= 600)  return {grade:'D+',color:'#cc4400'};
+  if (value >= 300)  return {grade:'D', color:'#cc3300'};
+  return {grade:'D-',color:'#cc2222'};
+}
+</script>
+<script>
+// ====================================================
+// AI GMs
+// ====================================================
+const AI_GMS = [
+  {id:'gm1',name:'Marcus Webb',   nickname:'THE PICK SELLER',   personality:'pick_seller',   team:'Westside Wolves',   grade:'B+',avatar:'🐺',tradeFreq:0.7},
+  {id:'gm2',name:'Darnell Knox',  nickname:'THE WIN NOW GM',    personality:'win_now',       team:'Knox City Kings',   grade:'A', avatar:'👑',tradeFreq:0.75},
+  {id:'gm3',name:'Reggie Payne',  nickname:'THE FIRESALE GM',   personality:'firesale',      team:'Payne FC',          grade:'C+',avatar:'🔥',tradeFreq:0.85},
+  {id:'gm4',name:'Victor Cruz',   nickname:'THE PREMIUM CHASER',personality:'premium_chaser',team:'Cruz Control',      grade:'A+',avatar:'💎',tradeFreq:0.3},
+  {id:'gm5',name:'Tyrell Banks',  nickname:'THE AGGRESSIVE GM', personality:'aggressive',    team:'Banks Squad',       grade:'B', avatar:'⚡',tradeFreq:0.95},
+  {id:'gm6',name:'Donovan Reeves',nickname:'THE REBUILDER',     personality:'rebuilder',     team:'Future State FC',   grade:'B-',avatar:'🏗️',tradeFreq:0.65},
+  {id:'gm7',name:'Calvin James',  nickname:'THE NEGOTIATOR',    personality:'negotiator',    team:'James Gang',        grade:'B+',avatar:'🤝',tradeFreq:0.7},
+  {id:'gm8',name:'Devon Mills',   nickname:'THE CONTENDER',     personality:'contender',     team:'Mills Machine',     grade:'A-',avatar:'🏆',tradeFreq:0.4},
+  {id:'gm9',name:'Andre Stone',   nickname:'THE DATA GM',       personality:'data_gm',       team:'Stone Analytics',   grade:'A', avatar:'📊',tradeFreq:0.55},
+];
+
+// AI GM rosters — player IDs + pick IDs
+const GM_ROSTER_DATA = {
+  gm1:{players:['p1','p34','p35','p70','p71','p6','p36','p37','p111','p77','p78','p41','p84','p85','p43','p116','p89','p88','p50','p87'],picks:['pick_2026_1e','pick_2026_2e','pick_2027_1m']},
+  gm2:{players:['p5','p30','p36','p70','p71','p110','p35','p74','p10','p32','p40','p76','p77','p114','p33','p44','p79','p86','p117','p82'],picks:['pick_2026_4']},
+  gm3:{players:['p7','p51','p52','p94','p95','p119','p50','p85','p86','p53','p87','p116','p89','p88','p22','p84','p83','p81','p118','p120'],picks:['pick_2026_3','pick_2026_4','pick_2025_3']},
+  gm4:{players:['p2','p30','p31','p70','p110','p111','p5','p35','p71','p74','p3','p32','p33','p38','p72','p75','p73','p112','p113','p115'],picks:['pick_2027_1e','pick_2026_1e']},
+  gm5:{players:['p8','p34','p41','p76','p78','p114','p44','p45','p82','p83','p84','p85','p117','p118','p50','p87','p86','p88','p53','p81'],picks:['pick_2026_2','pick_2027_2','pick_2026_3']},
+  gm6:{players:['p9','p38','p39','p72','p73','p43','p46','p47','p48','p54','p55','p56','p57','p90','p91','p92','p93','p122','p123','p124'],picks:['pick_2026_1e','pick_2026_1m','pick_2027_1e','pick_2027_1m','pick_2027_2e','pick_2026_2e']},
+  gm7:{players:['p6','p35','p36','p70','p71','p111','p37','p41','p77','p78','p44','p45','p82','p83','p114','p116','p50','p85','p86','p87'],picks:['pick_2026_1m','pick_2026_2','pick_2027_1m']},
+  gm8:{players:['p1','p30','p35','p70','p110','p5','p36','p71','p74','p111','p33','p37','p77','p32','p40','p44','p76','p114','p117','p82'],picks:['pick_2025_1l']},
+  gm9:{players:['p2','p31','p34','p71','p110','p5','p35','p70','p74','p32','p33','p37','p77','p78','p111','p38','p44','p45','p82','p114'],picks:['pick_2026_1m','pick_2026_2','pick_2027_1m']},
+};
+
+function buildGmRoster(gmId) {
+  const data = GM_ROSTER_DATA[gmId];
+  const playerMap = Object.fromEntries(PLAYERS.map(p=>[p.id,p]));
+  const pickMap = Object.fromEntries(PICKS_DB.map(p=>[p.id,p]));
+  return {
+    starters: data.players.map(id => playerMap[id]).filter(Boolean).map(p=>({...p})),
+    picks: data.picks.map(id => pickMap[id]).filter(Boolean).map(p=>({...p})),
+    ir: [],
+    taxi: [],
+  };
+}
+
+// ====================================================
+// D- ROSTER GENERATION
+// ====================================================
+function generateDMinusRoster() {
+  return {
+    starters: [
+      // QBs (bad)
+      {...PLAYERS.find(p=>p.id==='p20')}, // Sam Darnold
+      {...PLAYERS.find(p=>p.id==='p22')}, // Geno Smith
+      // RBs (aging/declining)
+      {...PLAYERS.find(p=>p.id==='p84')}, // Chuba Hubbard
+      {...PLAYERS.find(p=>p.id==='p87')}, // Rico Dowdle
+      {...PLAYERS.find(p=>p.id==='p88')}, // Blake Corum
+      {...PLAYERS.find(p=>p.id==='p89')}, // Jaylen Warren
+      // WRs (mix of injury risk + low targets)
+      {...PLAYERS.find(p=>p.id==='p53')}, // Jakobi Meyers
+      {...PLAYERS.find(p=>p.id==='p50')}, // Terry McLaurin
+      {...PLAYERS.find(p=>p.id==='p51')}, // Mike Evans
+      {...PLAYERS.find(p=>p.id==='p49')}, // DK Metcalf
+      {...PLAYERS.find(p=>p.id==='p52')}, // Davante Adams
+      {...PLAYERS.find(p=>p.id==='p56')}, // Tre Harris (rookie)
+      // TEs (no elite)
+      {...PLAYERS.find(p=>p.id==='p121')}, // TJ Hockenson
+      {...PLAYERS.find(p=>p.id==='p119')}, // Mark Andrews
+      // FLEX
+      {...PLAYERS.find(p=>p.id==='p81')}, // Zach Charbonnet
+      {...PLAYERS.find(p=>p.id==='p82')}, // D'Andre Swift
+      // Extra
+      {...PLAYERS.find(p=>p.id==='p94')}, // Josh Jacobs
+      {...PLAYERS.find(p=>p.id==='p95')}, // Saquon Barkley
+      {...PLAYERS.find(p=>p.id==='p120')}, // Okonkwo
+      {...PLAYERS.find(p=>p.id==='p124')}, // Mason Taylor
+    ].filter(Boolean),
+    ir: [
+      {...PLAYERS.find(p=>p.id==='p118'), injured:true, returnWeek:12}, // Dalton Kincaid
+    ].filter(Boolean),
+    taxi: [
+      {...PLAYERS.find(p=>p.id==='p90')}, // Quinshon Judkins
+      {...PLAYERS.find(p=>p.id==='p91')}, // Kaleb Johnson
+      {...PLAYERS.find(p=>p.id==='p54')}, // Jack Bech
+      {...PLAYERS.find(p=>p.id==='p55')}, // Luther Burden III
+    ].filter(Boolean),
+    picks: [
+      {...PICKS_DB.find(p=>p.id==='pick_2026_3'), id:'dp_2026_3a'},
+      {...PICKS_DB.find(p=>p.id==='pick_2026_3'), id:'dp_2026_3b', name:'2026 3rd (2)'},
+      {...PICKS_DB.find(p=>p.id==='pick_2026_4'), id:'dp_2026_4'},
+      {...PICKS_DB.find(p=>p.id==='pick_2027_3'), id:'dp_2027_3'},
+    ].filter(Boolean),
+  };
+}
+</script>
+<script>
+// ====================================================
+// TRADE EVALUATION ENGINE
+// ====================================================
+function evaluateTrade(offeredAssets, requestedAssets, gmPersonality) {
+  const offerVal  = offeredAssets.reduce((s,a)=>s+(a.value||0),0);
+  const receiveVal = requestedAssets.reduce((s,a)=>s+(a.value||0),0);
+  const ratio = offerVal / Math.max(receiveVal, 1);
+
+  const offeredPicks   = offeredAssets.filter(a=>a.id&&a.id.startsWith('pick'));
+  const receivedPlayers = requestedAssets.filter(a=>!a.id?.startsWith('pick'));
+  const offeredPlayers  = offeredAssets.filter(a=>!a.id?.startsWith('pick'));
+  const receivedPicks   = requestedAssets.filter(a=>a.id?.startsWith('pick'));
+
+  const msgs = {
+    accept_great: ['Deal! Love this for us.','Done. Let\'s make it official.','That works. Shaking hands now.','Agreed — fire off the trade.'],
+    accept_ok: ['Fine by me. Deal.','Value checks out, we\'re good.','I can live with that.','Alright, let\'s do it.'],
+    counter_close: ['Close — just need a little more.','Almost there, add something small.','Getting warm. Sweeten it slightly.','Right direction, minor tweak needed.'],
+    counter_far:  ['Need more to make this work.','Value\'s off. Come back stronger.','Not quite there — add more.','Interesting start, but I need more.'],
+    reject: ['Hard pass.','Not enough value here. Pass.','Nope, doesn\'t work for me.','Way off. Try again.','I\'ll pass on this one.'],
+  };
+  const rnd = arr => arr[Math.floor(Math.random()*arr.length)];
+
+  switch(gmPersonality) {
+    case 'pick_seller': {
+      const wantsPlayer = receivedPlayers.length > 0;
+      if (wantsPlayer && ratio >= 0.78) return {result:'accept', msg: rnd(msgs.accept_great)+' I love getting proven players.'};
+      if (ratio >= 0.68) return {result:'counter', msg: rnd(msgs.counter_close)+' Add a pick or two.'};
+      return {result:'reject', msg: rnd(msgs.reject)};
+    }
+    case 'win_now': {
+      const hasTopPlayer = receivedPlayers.some(p=>p.value>=7000);
+      if (hasTopPlayer && ratio>=0.72) return {result:'accept', msg:'DEAL! I need '+receivedPlayers[0].name+' in my lineup NOW.'};
+      if (ratio>=0.88) return {result:'accept', msg: rnd(msgs.accept_ok)};
+      if (ratio>=0.65 && hasTopPlayer) return {result:'counter', msg: rnd(msgs.counter_close)};
+      return {result:'reject', msg:'I only want established stars. '+rnd(msgs.reject)};
+    }
+    case 'firesale': {
+      const agingReq = requestedAssets.filter(p=>!p.id?.startsWith('pick')&&p.age>=30);
+      if (agingReq.length>0 && ratio>=0.52) return {result:'accept', msg:'Get these veterans off my hands! '+rnd(msgs.accept_great)};
+      if (ratio>=0.82) return {result:'accept', msg: rnd(msgs.accept_ok)};
+      if (ratio>=0.60) return {result:'counter', msg: rnd(msgs.counter_close)};
+      return {result:'reject', msg: rnd(msgs.reject)};
+    }
+    case 'premium_chaser': {
+      const hasElite = receivedPlayers.some(p=>p.value>=7500);
+      const hasPremPick = receivedPicks.some(p=>p.year<=2027&&p.round===1&&['early','mid'].includes(p.slot));
+      if (!hasElite && !hasPremPick) return {result:'reject', msg:'I only deal in elite assets (7500+ value or 1st round picks). Pass.'};
+      if ((hasElite||hasPremPick) && ratio>=0.85) return {result:'accept', msg:'Now we\'re talking. '+rnd(msgs.accept_great)};
+      if (ratio>=0.70) return {result:'counter', msg:'The caliber is right, but value needs work. '+rnd(msgs.counter_close)};
+      return {result:'reject', msg: rnd(msgs.reject)};
+    }
+    case 'aggressive': {
+      if (ratio>=0.92) return {result:'accept', msg:'Yeah! '+rnd(msgs.accept_great)};
+      if (ratio>=0.72) return {result:'counter', msg: rnd(msgs.counter_close)};
+      if (ratio>=0.55 && Math.random()>0.55) return {result:'accept', msg:'Eh, fine. '+rnd(msgs.accept_ok)};
+      return {result:'reject', msg: rnd(msgs.reject)+' I\'ll come at you with a counter soon.'};
+    }
+    case 'rebuilder': {
+      const givingPicksAway = offeredPicks.length > 0;
+      const getsYouth = receivedPlayers.filter(p=>p.age<=24||p.rookie);
+      if (givingPicksAway && getsYouth.length===0) return {result:'reject', msg:'I will NOT sell my future capital. No picks leaving my roster without young players back.'};
+      if (getsYouth.length>0 && ratio>=0.80) return {result:'accept', msg:'Young players and future capital? '+rnd(msgs.accept_great)};
+      if (ratio>=0.88 && !givingPicksAway) return {result:'accept', msg: rnd(msgs.accept_ok)};
+      if (ratio>=0.68) return {result:'counter', msg:'Add youth or picks to sweeten this. '+rnd(msgs.counter_close)};
+      return {result:'reject', msg: rnd(msgs.reject)};
+    }
+    case 'negotiator': {
+      if (ratio>=0.97) return {result:'accept', msg:'Alright, you wore me down. '+rnd(msgs.accept_ok)};
+      if (ratio>=0.48) return {result:'counter', msg:'Interesting offer. Let me come back to you with a counter...'};
+      return {result:'reject', msg:'Way too low. Come back with a real offer.'};
+    }
+    case 'contender': {
+      const improvesNow = receivedPlayers.some(p=>p.value>=6000);
+      if (improvesNow && ratio>=0.88) return {result:'accept', msg:'If it helps me win now — done. '+rnd(msgs.accept_great)};
+      if (ratio>=0.95) return {result:'accept', msg: rnd(msgs.accept_ok)};
+      if (improvesNow && ratio>=0.72) return {result:'counter', msg:'Getting there. Need a bit more value. '+rnd(msgs.counter_close)};
+      return {result:'reject', msg:'Doesn\'t move my needle enough. '+rnd(msgs.reject)};
+    }
+    case 'data_gm': {
+      if (ratio>=0.95) return {result:'accept', msg:'Value math clears my threshold. '+rnd(msgs.accept_ok)};
+      if (ratio>=0.84) return {result:'counter', msg:'My model needs 5% more value on your end. '+rnd(msgs.counter_close)};
+      return {result:'reject', msg:'Fails my value screen. I need ratio ≥ 0.95. Hard pass.'};
+    }
+    default:
+      if (ratio>=0.88) return {result:'accept', msg: rnd(msgs.accept_ok)};
+      if (ratio>=0.72) return {result:'counter', msg: rnd(msgs.counter_close)};
+      return {result:'reject', msg: rnd(msgs.reject)};
+  }
+}
+
+// Generate a proactive offer from an AI GM toward the human player
+function tryGenerateProactiveOffer(gm, gmRoster, humanRoster) {
+  const humanPlayers = humanRoster.starters || [];
+  const humanPicks   = humanRoster.picks || [];
+  const gmPlayers    = gmRoster.starters || [];
+  const gmPicks      = gmRoster.picks || [];
+
+  switch(gm.personality) {
+    case 'pick_seller': {
+      const targets = humanPlayers.filter(p=>p.value>=3000).sort((a,b)=>b.value-a.value);
+      if (!targets.length) return null;
+      const target = targets[Math.floor(Math.random()*Math.min(3,targets.length))];
+      const avail1sts = gmPicks.filter(p=>p.round===1).slice(0,2);
+      if (!avail1sts.length) return null;
+      const offerVal = avail1sts.reduce((s,p)=>s+p.value,0);
+      if (offerVal < target.value * 0.65) return null;
+      return {from:gm.id, youGive:[target], youGet:avail1sts,
+        msg:`Hey, I want ${target.name} (${target.value} KTC). Offering you ${avail1sts.map(p=>p.name).join(' + ')}. What do you say?`};
+    }
+    case 'firesale': {
+      const aging = gmPlayers.filter(p=>p.age>=30).sort((a,b)=>b.value-a.value);
+      if (!aging.length) return null;
+      const offer = aging[0];
+      if (!humanPicks.length) return null;
+      const cheapPick = [...humanPicks].sort((a,b)=>a.value-b.value)[0];
+      return {from:gm.id, youGive:[cheapPick], youGet:[offer],
+        msg:`Firesale! I need to move ${offer.name} (age ${offer.age}). Your ${cheapPick.name} and we have a deal.`};
+    }
+    case 'aggressive': {
+      const humanVets = humanPlayers.filter(p=>p.value>=2500).sort((a,b)=>b.value-a.value);
+      if (!humanVets.length) return null;
+      const target = humanVets[Math.floor(Math.random()*Math.min(4,humanVets.length))];
+      const gmOffer = gmPlayers.filter(p=>p.value<=5000&&p.value>=1500).sort((a,b)=>b.value-a.value).slice(0,2);
+      if (!gmOffer.length) return null;
+      return {from:gm.id, youGive:[target], youGet:gmOffer,
+        msg:`What's it take for ${target.name}? I've got ${gmOffer.map(p=>p.name).join(' + ')} ready to go. Let's make a deal.`};
+    }
+    case 'rebuilder': {
+      const humanAging = humanPlayers.filter(p=>p.age>=29).sort((a,b)=>b.value-a.value);
+      if (!humanAging.length) return null;
+      const target = humanAging[0];
+      const bestPick = gmPicks.sort((a,b)=>b.value-a.value)[0];
+      if (!bestPick || bestPick.value < target.value * 0.58) return null;
+      return {from:gm.id, youGive:[target], youGet:[bestPick],
+        msg:`I'll give ${target.name} a good home. I'm offering my ${bestPick.name} (${bestPick.value} KTC). Good value to start your rebuild.`};
+    }
+    case 'win_now': {
+      const topHuman = humanPlayers.filter(p=>p.value>=4000).sort((a,b)=>b.value-a.value);
+      if (!topHuman.length) return null;
+      const target = topHuman[0];
+      const offerPicks = gmPicks.sort((a,b)=>b.value-a.value).slice(0,2);
+      const offerPlayers = gmPlayers.filter(p=>p.value>=2000&&p.value<=target.value*0.7).slice(0,1);
+      const youGet = [...offerPicks, ...offerPlayers];
+      if (!youGet.length) return null;
+      return {from:gm.id, youGive:[target], youGet,
+        msg:`I NEED ${target.name} for my championship run. Offering ${youGet.map(a=>a.name).join(' + ')}. Let's talk.`};
+    }
+    default: return null;
+  }
+}
+</script>
+<script>
+// ====================================================
+// GAME STATE
+// ====================================================
+let STATE = {
+  initialized: false,
+  teamName: 'My Team',
+  week: 1,
+  record: {w:0, l:0},
+  humanRoster: null,
+  gmRosters: {},
+  inbox: [],
+  inboxRead: new Set(),
+  selectedForTrade: [], // ids of human assets selected
+  tradeBuilderGive: [], // human assets in trade builder
+  tradeBuilderGet: [],  // gm assets in trade builder
+  tradePartnerId: '',
+  offerIdCounter: 0,
+};
+
+function nextOfferId() { return 'offer_' + (++STATE.offerIdCounter); }
+
+function startGame() {
+  const input = document.getElementById('teamNameInput');
+  const name = (input.value || '').trim() || 'My Rebuild';
+  STATE.teamName = name;
+  document.getElementById('headerTeamName').value = name;
+  STATE.humanRoster = generateDMinusRoster();
+
+  // Build AI GM rosters
+  AI_GMS.forEach(gm => { STATE.gmRosters[gm.id] = buildGmRoster(gm.id); });
+
+  // Populate trade partner select
+  const sel = document.getElementById('tradePartnerSelect');
+  sel.innerHTML = '<option value="">— Select Trade Partner —</option>';
+  AI_GMS.forEach(gm => {
+    const opt = document.createElement('option');
+    opt.value = gm.id;
+    opt.textContent = `${gm.avatar} ${gm.name} — ${gm.team}`;
+    sel.appendChild(opt);
+  });
+
+  // Generate initial proactive offers (2-3 GMs)
+  let count = 0;
+  for (const gm of AI_GMS) {
+    if (count >= 3) break;
+    if (Math.random() > gm.tradeFreq) continue;
+    const offer = tryGenerateProactiveOffer(gm, STATE.gmRosters[gm.id], STATE.humanRoster);
+    if (offer) {
+      offer.id = nextOfferId();
+      offer.timestamp = Date.now();
+      offer.read = false;
+      STATE.inbox.push(offer);
+      count++;
+    }
+  }
+
+  STATE.initialized = true;
+  document.getElementById('welcomeScreen').style.display = 'none';
+  renderAll();
+
+  // Simulate AI GMs sending offers over time
+  scheduleAIOffers();
+}
+
+function updateTeamName(val) {
+  STATE.teamName = val || 'My Team';
+}
+
+function scheduleAIOffers() {
+  // Every 45-90 seconds an AI GM might send a new offer
+  const delay = 45000 + Math.random() * 45000;
+  setTimeout(() => {
+    if (!STATE.initialized) return;
+    const eligible = AI_GMS.filter(gm => Math.random() < gm.tradeFreq);
+    if (eligible.length > 0) {
+      const gm = eligible[Math.floor(Math.random()*eligible.length)];
+      const offer = tryGenerateProactiveOffer(gm, STATE.gmRosters[gm.id], STATE.humanRoster);
+      if (offer) {
+        offer.id = nextOfferId();
+        offer.timestamp = Date.now();
+        offer.read = false;
+        STATE.inbox.unshift(offer);
+        renderInboxPreview();
+        renderInboxFull();
+        updateInboxBadge();
+        showToast(`📩 New offer from ${gm.name}`, offer.msg.substring(0,80)+'...', 'info');
+      }
+    }
+    scheduleAIOffers();
+  }, delay);
+}
+
+// ====================================================
+// RENDER HELPERS
+// ====================================================
+function renderAll() {
+  renderGradeCard();
+  renderRosterZones();
+  renderTaxiIR();
+  renderPicksPanel();
+  renderInboxPreview();
+  renderInboxFull();
+  renderStandings();
+  updateInboxBadge();
+  renderTradeYourRoster();
+}
+
+function calcRosterValue(roster) {
+  if (!roster) return 0;
+  const pv = (roster.starters||[]).reduce((s,p)=>s+(p.value||0),0);
+  const iv = (roster.ir||[]).reduce((s,p)=>s+(p.value||0)*0.5,0);
+  const tv = (roster.taxi||[]).reduce((s,p)=>s+(p.value||0),0);
+  const pkv = (roster.picks||[]).reduce((s,p)=>s+(p.value||0),0);
+  return pv + iv + tv + pkv;
+}
+
+function renderGradeCard() {
+  const total = calcRosterValue(STATE.humanRoster);
+  const gi = getGradeInfo(total);
+  const idx = GRADES.indexOf(gi);
+  const progress = idx === GRADES.length-1 ? 100
+    : Math.min(100, Math.round(((total - gi.min) / (gi.max - gi.min)) * 100));
+  const nextGrade = GRADES[Math.min(idx+1, GRADES.length-1)];
+  const need = Math.max(0, gi.max - total);
+
+  // Header
+  const hg = document.getElementById('headerGrade');
+  hg.textContent = gi.grade;
+  hg.style.color = gi.color;
+  hg.style.borderColor = gi.color;
+  const hpb = document.getElementById('headerProgressBar');
+  hpb.style.width = (2 + progress * 0.98) + '%';
+  hpb.style.background = gi.color;
+
+  // Sidebar card
+  const sg = document.getElementById('sidebarGrade');
+  sg.textContent = gi.grade;
+  sg.style.color = gi.color;
+  document.getElementById('sidebarValue').textContent = total.toLocaleString();
+  document.getElementById('sidebarNextGrade').textContent = nextGrade.grade;
+  document.getElementById('sidebarNeed').textContent = need > 0 ? '+' + need.toLocaleString() : '✓ Max';
+  const spb = document.getElementById('sidebarProgressBar');
+
+  // Full progress relative to D- → A+ scale
+  const fullMin = GRADES[0].min, fullMax = GRADES[GRADES.length-1].min;
+  const fullPct = Math.min(100, Math.round(((total - fullMin) / (fullMax - fullMin)) * 100));
+  spb.style.width = Math.max(2,fullPct) + '%';
+  spb.style.background = gi.color;
+}
+
+function getZone(value) {
+  if (value >= 5000) return 'redzone';
+  if (value >= 3000) return 'midfield';
+  return 'own20';
+}
+
+function espnHeadshotUrl(espnId) {
+  return `https://a.espncdn.com/i/headshots/nfl/players/full/${espnId}.png`;
+}
+
+function renderPlayerCard(asset, clickable, isSelected, context) {
+  const isPick = asset.id && asset.id.startsWith('pick') || asset.year;
+  if (isPick) return renderPickCard(asset, clickable, isSelected, context);
+
+  const gi = playerGradeInfo(asset.value);
+  const sel = isSelected ? 'selected' : '';
+  const inj = asset.injured ? 'injured' : '';
+  const onClick = clickable ? `onclick="toggleAssetSelect('${asset.id}','${context}')"` : '';
+
+  return `<div class="player-card ${sel} ${inj}" ${onClick} data-id="${asset.id}">
+    ${asset.injured ? '<div class="injury-badge">IR</div>' : (asset.rookie ? '<div class="rookie-badge">ROOKIE</div>' : '')}
+    <div class="player-card-top">
+      <img class="player-headshot" 
+        src="${espnHeadshotUrl(asset.espnId)}"
+        onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2244%22 height=%2244%22><rect width=%2244%22 height=%2244%22 fill=%22%23222%22 rx=%2222%22/><text x=%2222%22 y=%2228%22 text-anchor=%22middle%22 fill=%22%23666%22 font-size=%2216%22>${asset.pos}</text></svg>'"
+        alt="${asset.name}" loading="lazy"/>
+      <div class="player-info">
+        <div class="player-name">${asset.name}</div>
+        <div class="player-meta">${asset.team || ''} · Age ${asset.age || '?'}</div>
+      </div>
+    </div>
+    <div class="player-card-bottom">
+      <span class="pos-badge pos-${asset.pos}">${asset.pos}</span>
+      <span class="player-value">${asset.value?.toLocaleString() || '—'}</span>
+      <span class="player-grade-stamp" style="color:${gi.color};border-color:${gi.color}">${gi.grade}</span>
+    </div>
+  </div>`;
+}
+
+function renderPickCard(pick, clickable, isSelected, context) {
+  const sel = isSelected ? 'selected' : '';
+  const onClick = clickable ? `onclick="toggleAssetSelect('${pick.id}','${context}')"` : '';
+  const yr = pick.year || '';
+  const rnd = pick.round === 1 ? '1ST' : pick.round === 2 ? '2ND' : pick.round === 3 ? '3RD' : `${pick.round}TH`;
+  return `<div class="pick-card ${sel}" ${onClick} data-id="${pick.id}">
+    <span class="pos-badge pos-PICK">PICK</span>
+    <div class="pick-name" style="margin-top:8px">${pick.name}</div>
+    <div class="pick-value">${pick.value?.toLocaleString() || '—'} KTC</div>
+  </div>`;
+}
+
+function renderRosterZones() {
+  const starters = STATE.humanRoster?.starters || [];
+  const sorted = [...starters].sort((a,b)=>(b.value||0)-(a.value||0));
+
+  const zones = {redzone:[], midfield:[], own20:[]};
+  sorted.forEach(p => zones[getZone(p.value)].push(p));
+
+  ['redzone','midfield','own20'].forEach(zone => {
+    const grid = document.getElementById(`${zone}-grid`);
+    const count = document.getElementById(`${zone}-count`);
+    const items = zones[zone];
+    count.textContent = `${items.length} asset${items.length!==1?'s':''}`;
+    grid.innerHTML = items.map(p => renderPlayerCard(p, true, STATE.selectedForTrade.includes(p.id), 'roster')).join('');
+  });
+}
+
+function renderTaxiIR() {
+  const taxiGrid = document.getElementById('taxi-grid');
+  const irGrid = document.getElementById('ir-grid');
+  taxiGrid.innerHTML = (STATE.humanRoster?.taxi||[]).map(p => renderPlayerCard(p, false, false, 'taxi')).join('') || '<p style="color:var(--muted);font-size:13px">No taxi squad players.</p>';
+  irGrid.innerHTML = (STATE.humanRoster?.ir||[]).map(p => renderPlayerCard(p, false, false, 'ir')).join('') || '<p style="color:var(--muted);font-size:13px">No IR players.</p>';
+}
+
+function renderPicksPanel() {
+  const grid = document.getElementById('picks-grid');
+  const picks = STATE.humanRoster?.picks || [];
+  grid.innerHTML = picks.map(p => renderPickCard(p, true, STATE.selectedForTrade.includes(p.id), 'picks')).join('') || '<p style="color:var(--muted);font-size:13px">No draft picks.</p>';
+}
+
+function renderTradeYourRoster() {
+  const grid = document.getElementById('trade-your-roster-grid');
+  const all = [
+    ...(STATE.humanRoster?.starters||[]),
+    ...(STATE.humanRoster?.picks||[]),
+  ].sort((a,b)=>(b.value||0)-(a.value||0));
+  grid.innerHTML = all.map(a => {
+    const inTrade = STATE.tradeBuilderGive.some(x=>x.id===a.id);
+    return renderPlayerCard(a, true, inTrade, 'trade_give');
+  }).join('');
+}
+
+function renderPartnerRoster(gmId) {
+  if (!gmId) { document.getElementById('partnerRosterSection').style.display='none'; return; }
+  const gm = AI_GMS.find(g=>g.id===gmId);
+  const roster = STATE.gmRosters[gmId];
+  if (!roster || !gm) return;
+  document.getElementById('partnerRosterSection').style.display='block';
+  document.getElementById('partnerRosterTitle').textContent = `${gm.avatar} ${gm.name}'s Roster — Click to Add to Trade`;
+  const all = [
+    ...(roster.starters||[]),
+    ...(roster.picks||[]),
+  ].sort((a,b)=>(b.value||0)-(a.value||0));
+  const grid = document.getElementById('partner-roster-grid');
+  grid.innerHTML = all.map(a => {
+    const inTrade = STATE.tradeBuilderGet.some(x=>x.id===a.id);
+    return renderPlayerCard(a, true, inTrade, 'trade_get');
+  }).join('');
+}
+</script>
+<script>
+// ====================================================
+// INBOX RENDER
+// ====================================================
+function updateInboxBadge() {
+  const unread = STATE.inbox.filter(o=>!o.read).length;
+  document.getElementById('inboxCount').textContent = unread || STATE.inbox.length;
+  const dot = document.getElementById('inboxDot');
+  dot.style.display = unread > 0 ? 'inline-block' : 'none';
+  const tab = document.getElementById('inboxTab');
+  tab.innerHTML = `Inbox ${unread > 0 ? '<span class="inbox-dot" id="inboxDot"></span>' : '<span class="inbox-dot" id="inboxDot" style="display:none"></span>'}`;
+}
+
+function renderOfferCard(offer, isPreview) {
+  const gm = AI_GMS.find(g=>g.id===offer.from);
+  if (!gm) return '';
+  const youGiveVal = (offer.youGive||[]).reduce((s,a)=>s+(a.value||0),0);
+  const youGetVal  = (offer.youGet||[]).reduce((s,a)=>s+(a.value||0),0);
+  const ratio = youGetVal / Math.max(youGiveVal,1);
+  const fairnessLabel = ratio >= 0.90 ? '✅ FAIR TRADE' : ratio >= 0.72 ? '⚠️ SLIGHT OVERPAY' : '❌ BAD VALUE';
+  const fairnessColor = ratio >= 0.90 ? 'var(--green-glow)' : ratio >= 0.72 ? '#eab308' : 'var(--red)';
+
+  const giveNames = (offer.youGive||[]).map(a=>`<span class="offer-asset-chip">${a.name}</span>`).join('');
+  const getNames  = (offer.youGet||[]).map(a=>`<span class="offer-asset-chip">${a.name}</span>`).join('');
+
+  const actions = isPreview ? '' : `
+    <div class="offer-actions">
+      <button class="btn-accept" onclick="acceptOffer('${offer.id}')">✓ ACCEPT</button>
+      <button class="btn-reject" onclick="rejectOffer('${offer.id}')">✗ DECLINE</button>
+    </div>`;
+
+  return `<div class="offer-item ${offer.read?'read':''}" onclick="markRead('${offer.id}')">
+    ${!offer.read ? '<div class="unread-dot"></div>' : ''}
+    <div class="offer-gm-header">
+      <div class="offer-avatar">${gm.avatar}</div>
+      <div class="offer-gm-info">
+        <div class="offer-gm-name">${gm.name}</div>
+        <div class="offer-gm-tag">${gm.nickname}</div>
+      </div>
+    </div>
+    <div class="offer-message">"${offer.msg}"</div>
+    <div class="offer-assets">
+      <div class="offer-row">
+        <span class="offer-label">YOU GIVE</span>
+        <div class="offer-assets-list">${giveNames}</div>
+      </div>
+      <div class="offer-row">
+        <span class="offer-label">YOU GET</span>
+        <div class="offer-assets-list">${getNames}</div>
+      </div>
+    </div>
+    <div class="offer-value-compare">
+      <div class="value-block">
+        <div class="value-num" style="color:var(--red)">${youGiveVal.toLocaleString()}</div>
+        <div class="value-lbl">You Give</div>
+      </div>
+      <div class="vs-sep">vs</div>
+      <div class="value-block">
+        <div class="value-num" style="color:var(--green-glow)">${youGetVal.toLocaleString()}</div>
+        <div class="value-lbl">You Get</div>
+      </div>
+      <div style="font-size:11px;font-weight:700;color:${fairnessColor};margin-left:8px;white-space:nowrap">${fairnessLabel}</div>
+    </div>
+    ${actions}
+  </div>`;
+}
+
+function renderInboxPreview() {
+  const container = document.getElementById('inboxPreview');
+  const recent = STATE.inbox.slice(0,3);
+  if (!recent.length) {
+    container.innerHTML = '<div class="empty-inbox">📭 No offers yet.<br>Start trading to get things moving.</div>';
+    return;
+  }
+  container.innerHTML = recent.map(o=>renderOfferCard(o,true)).join('');
+}
+
+function renderInboxFull() {
+  const container = document.getElementById('inbox-full-list');
+  if (!STATE.inbox.length) {
+    container.innerHTML = '<div class="empty-inbox" style="padding:40px;text-align:center;color:var(--muted)">📭 No trade offers yet.<br><br>Your rebuild starts here. Make some moves and the GMs will start coming to you.</div>';
+    return;
+  }
+  container.innerHTML = STATE.inbox.map(o=>renderOfferCard(o,false)).join('');
+}
+
+function markRead(offerId) {
+  const offer = STATE.inbox.find(o=>o.id===offerId);
+  if (offer) offer.read = true;
+  updateInboxBadge();
+}
+
+function acceptOffer(offerId) {
+  const offer = STATE.inbox.find(o=>o.id===offerId);
+  if (!offer) return;
+  const gm = AI_GMS.find(g=>g.id===offer.from);
+
+  // Execute the trade
+  executeTrade(offer.youGive, offer.youGet, offer.from);
+
+  // Remove from inbox
+  STATE.inbox = STATE.inbox.filter(o=>o.id!==offerId);
+
+  showToast(`🤝 Trade Accepted!`, `You accepted ${gm.name}'s offer. Your roster has been updated.`, 'success');
+  renderAll();
+}
+
+function rejectOffer(offerId) {
+  const offer = STATE.inbox.find(o=>o.id===offerId);
+  if (!offer) return;
+  const gm = AI_GMS.find(g=>g.id===offer.from);
+  offer.read = true;
+  // Move to end
+  STATE.inbox = STATE.inbox.filter(o=>o.id!==offerId);
+
+  showToast(`❌ Offer Declined`, `You declined ${gm.name}'s trade offer.`, 'info');
+  renderInboxPreview();
+  renderInboxFull();
+  updateInboxBadge();
+}
+
+function executeTrade(humanGives, humanGets, gmId) {
+  // Remove from human
+  humanGives.forEach(asset => {
+    if (asset.id?.startsWith('pick')) {
+      STATE.humanRoster.picks = (STATE.humanRoster.picks||[]).filter(p=>p.id!==asset.id);
+    } else {
+      STATE.humanRoster.starters = (STATE.humanRoster.starters||[]).filter(p=>p.id!==asset.id);
+      STATE.humanRoster.taxi    = (STATE.humanRoster.taxi||[]).filter(p=>p.id!==asset.id);
+    }
+  });
+  // Add to human
+  humanGets.forEach(asset => {
+    if (asset.id?.startsWith('pick')) {
+      STATE.humanRoster.picks = [...(STATE.humanRoster.picks||[]), {...asset}];
+    } else {
+      STATE.humanRoster.starters = [...(STATE.humanRoster.starters||[]), {...asset}];
+    }
+  });
+
+  // Remove from gm
+  const gmRoster = STATE.gmRosters[gmId];
+  if (gmRoster) {
+    humanGets.forEach(asset => {
+      if (asset.id?.startsWith('pick')) {
+        gmRoster.picks = (gmRoster.picks||[]).filter(p=>p.id!==asset.id);
+      } else {
+        gmRoster.starters = (gmRoster.starters||[]).filter(p=>p.id!==asset.id);
+      }
+    });
+    humanGives.forEach(asset => {
+      if (asset.id?.startsWith('pick')) {
+        gmRoster.picks = [...(gmRoster.picks||[]), {...asset}];
+      } else {
+        gmRoster.starters = [...(gmRoster.starters||[]), {...asset}];
+      }
+    });
+  }
+}
+
+// ====================================================
+// TRADE BUILDER
+// ====================================================
+function toggleAssetSelect(assetId, context) {
+  if (context === 'trade_give') {
+    const all = [
+      ...(STATE.humanRoster?.starters||[]),
+      ...(STATE.humanRoster?.picks||[]),
+    ];
+    const asset = all.find(a=>a.id===assetId);
+    if (!asset) return;
+    const idx = STATE.tradeBuilderGive.findIndex(a=>a.id===assetId);
+    if (idx >= 0) STATE.tradeBuilderGive.splice(idx,1);
+    else STATE.tradeBuilderGive.push(asset);
+    renderTradeBuilder();
+    renderTradeYourRoster();
+  } else if (context === 'trade_get') {
+    const gmId = STATE.tradePartnerId;
+    if (!gmId) return;
+    const roster = STATE.gmRosters[gmId];
+    const all = [...(roster?.starters||[]), ...(roster?.picks||[])];
+    const asset = all.find(a=>a.id===assetId);
+    if (!asset) return;
+    const idx = STATE.tradeBuilderGet.findIndex(a=>a.id===assetId);
+    if (idx >= 0) STATE.tradeBuilderGet.splice(idx,1);
+    else STATE.tradeBuilderGet.push(asset);
+    renderTradeBuilder();
+    renderPartnerRoster(gmId);
+  } else if (context === 'roster' || context === 'picks') {
+    // On roster tab: toggle selection highlight (for reference, not trade builder)
+    const idx = STATE.selectedForTrade.indexOf(assetId);
+    if (idx >= 0) STATE.selectedForTrade.splice(idx,1);
+    else STATE.selectedForTrade.push(assetId);
+    renderRosterZones();
+    renderPicksPanel();
+  }
+}
+
+function removeFromTrade(assetId, side) {
+  if (side === 'give') {
+    STATE.tradeBuilderGive = STATE.tradeBuilderGive.filter(a=>a.id!==assetId);
+  } else {
+    STATE.tradeBuilderGet = STATE.tradeBuilderGet.filter(a=>a.id!==assetId);
+  }
+  renderTradeBuilder();
+  renderTradeYourRoster();
+  if (STATE.tradePartnerId) renderPartnerRoster(STATE.tradePartnerId);
+}
+
+function updateTradePartner() {
+  STATE.tradePartnerId = document.getElementById('tradePartnerSelect').value;
+  STATE.tradeBuilderGet = [];
+  renderPartnerRoster(STATE.tradePartnerId);
+  renderTradeBuilder();
+}
+
+function renderTradeBuilder() {
+  const giveSlots = document.getElementById('youSendSlots');
+  const getSlots  = document.getElementById('youGetSlots');
+  const give = STATE.tradeBuilderGive;
+  const get  = STATE.tradeBuilderGet;
+
+  if (give.length === 0) {
+    giveSlots.innerHTML = '<span class="trade-slot-empty">Click players/picks on your roster to add them here</span>';
+  } else {
+    giveSlots.innerHTML = give.map(a=>`
+      <div class="trade-slot-chip">
+        <span class="pos-badge pos-${a.year?'PICK':a.pos||'PICK'}">${a.year?'PICK':a.pos||'PICK'}</span>
+        ${a.name}
+        <span class="trade-chip-remove" onclick="removeFromTrade('${a.id}','give')">×</span>
+      </div>`).join('');
+  }
+
+  const partner = STATE.tradePartnerId ? AI_GMS.find(g=>g.id===STATE.tradePartnerId) : null;
+  const getLabel = document.getElementById('youGetLabel');
+  if (partner) getLabel.textContent = `You Receive (from ${partner.name})`;
+
+  if (!STATE.tradePartnerId) {
+    getSlots.innerHTML = '<span class="trade-slot-empty">Select a trade partner to see their roster</span>';
+  } else if (get.length === 0) {
+    getSlots.innerHTML = '<span class="trade-slot-empty">Click assets from partner roster below to request them</span>';
+  } else {
+    getSlots.innerHTML = get.map(a=>`
+      <div class="trade-slot-chip">
+        <span class="pos-badge pos-${a.year?'PICK':a.pos||'PICK'}">${a.year?'PICK':a.pos||'PICK'}</span>
+        ${a.name}
+        <span class="trade-chip-remove" onclick="removeFromTrade('${a.id}','get')">×</span>
+      </div>`).join('');
+  }
+
+  // Value display
+  const giveVal = give.reduce((s,a)=>s+(a.value||0),0);
+  const getVal  = get.reduce((s,a)=>s+(a.value||0),0);
+  const ratio = getVal / Math.max(giveVal,1);
+
+  document.getElementById('youSendValDisplay').textContent = giveVal.toLocaleString();
+  document.getElementById('youGetValDisplay').textContent  = getVal.toLocaleString();
+
+  const fairEl = document.getElementById('tradeFairness');
+  if (!give.length && !get.length) {
+    fairEl.textContent = '—'; fairEl.className = 'trade-fairness fairness-ok';
+  } else if (ratio >= 0.90) {
+    fairEl.textContent = '✅ FAIR'; fairEl.className = 'trade-fairness fairness-fair';
+  } else if (ratio >= 0.72) {
+    fairEl.textContent = '⚠️ OK'; fairEl.className = 'trade-fairness fairness-ok';
+  } else {
+    fairEl.textContent = '❌ LOW'; fairEl.className = 'trade-fairness fairness-bad';
+  }
+
+  const btn = document.getElementById('tradeSubmitBtn');
+  if (give.length > 0 && get.length > 0 && STATE.tradePartnerId) {
+    btn.disabled = false;
+    btn.textContent = 'SEND TRADE PROPOSAL →';
+  } else {
+    btn.disabled = true;
+    btn.textContent = 'SELECT PARTNER & ASSETS';
+  }
+}
+
+function submitTrade() {
+  const give = STATE.tradeBuilderGive;
+  const get  = STATE.tradeBuilderGet;
+  const gmId = STATE.tradePartnerId;
+  const gm   = AI_GMS.find(g=>g.id===gmId);
+  if (!give.length || !get.length || !gm) return;
+
+  const gmRoster = STATE.gmRosters[gmId];
+  const result = evaluateTrade(give, get, gm.personality);
+
+  let content = '';
+  if (result.result === 'accept') {
+    content = `
+      <div class="trade-result-banner accept">✅ TRADE ACCEPTED</div>
+      <div style="font-size:14px;margin-bottom:16px">${gm.avatar} <strong>${gm.name}</strong> says: <em>"${result.msg}"</em></div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:16px">The trade has been executed. Your roster has been updated.</div>`;
+    executeTrade(give, get, gmId);
+    STATE.tradeBuilderGive = [];
+    STATE.tradeBuilderGet = [];
+  } else if (result.result === 'counter') {
+    const giveVal = give.reduce((s,a)=>s+(a.value||0),0);
+    const getVal  = get.reduce((s,a)=>s+(a.value||0),0);
+    const gap = getVal - giveVal;
+    content = `
+      <div class="trade-result-banner counter">↔️ COUNTER OFFER</div>
+      <div style="font-size:14px;margin-bottom:16px">${gm.avatar} <strong>${gm.name}</strong> says: <em>"${result.msg}"</em></div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:12px">Value gap: <strong style="color:#eab308">~${Math.abs(gap).toLocaleString()} KTC</strong> needed. Try adding more value to your offer.</div>`;
+  } else {
+    content = `
+      <div class="trade-result-banner reject">❌ TRADE REJECTED</div>
+      <div style="font-size:14px;margin-bottom:16px">${gm.avatar} <strong>${gm.name}</strong> says: <em>"${result.msg}"</em></div>
+      <div style="font-size:13px;color:var(--muted)">They weren't interested this time. Try adjusting your offer or approach a different GM.</div>`;
+  }
+
+  document.getElementById('tradeResultContent').innerHTML = content;
+  document.getElementById('tradeModal').classList.add('open');
+  renderAll();
+}
+
+function closeTradeModal() {
+  document.getElementById('tradeModal').classList.remove('open');
+  renderTradeBuilder();
+  renderTradeYourRoster();
+  if (STATE.tradePartnerId) renderPartnerRoster(STATE.tradePartnerId);
+}
+
+// ====================================================
+// STANDINGS
+// ====================================================
+function renderStandings() {
+  const body = document.getElementById('standingsBody');
+  const teams = [
+    { name: STATE.teamName, gm:'You', isYou:true, value:calcRosterValue(STATE.humanRoster), record:STATE.record },
+    ...AI_GMS.map(gm=>({
+      name:gm.team, gm:gm.name, isYou:false,
+      value:calcRosterValue(STATE.gmRosters[gm.id]),
+      grade:gm.grade, record:{w:0,l:0}
+    }))
+  ];
+  teams.sort((a,b)=>b.value-a.value);
+
+  body.innerHTML = teams.map((t,i)=>{
+    const gi = getGradeInfo(t.value);
+    return `<tr class="${t.isYou?'you':''}">
+      <td style="color:var(--muted);font-weight:700">${i+1}</td>
+      <td style="font-weight:700">${t.name}${t.isYou?' <span style="color:var(--orange);font-size:11px">(YOU)</span>':''}</td>
+      <td style="color:var(--muted)">${t.gm}</td>
+      <td><span style="color:${gi.color};font-weight:800;font-family:\'Courier New\',monospace">${gi.grade}</span></td>
+      <td style="font-family:\'Courier New\',monospace;color:var(--muted)">${t.value.toLocaleString()}</td>
+      <td style="color:var(--muted)">${t.record.w}-${t.record.l}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ====================================================
+// NAV TABS
+// ====================================================
+function switchTab(tab) {
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  event.target.closest('.nav-tab').classList.add('active');
+  const panel = document.getElementById(`panel-${tab}`);
+  if (panel) panel.classList.add('active');
+
+  if (tab === 'trade') {
+    renderTradeYourRoster();
+    renderTradeBuilder();
+    if (STATE.tradePartnerId) renderPartnerRoster(STATE.tradePartnerId);
+  }
+  if (tab === 'inbox') {
+    renderInboxFull();
+  }
+  if (tab === 'league') {
+    renderStandings();
+  }
+}
+
+function switchSubTab(sub) {
+  document.querySelectorAll('.sub-tab').forEach(t=>t.classList.remove('active'));
+  event.target.classList.add('active');
+  ['starters','taxi','ir','picks'].forEach(s=>{
+    const el = document.getElementById(`subpanel-${s}`);
+    if (el) el.style.display = s===sub ? '' : 'none';
+  });
+}
+
+// ====================================================
+// TOAST
+// ====================================================
+function showToast(title, msg, type='info') {
+  const tc = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.innerHTML = `<div class="toast-title">${title}</div><div class="toast-msg">${msg}</div>`;
+  tc.appendChild(t);
+  setTimeout(()=>{ t.style.opacity='0'; t.style.transform='translateX(20px)'; t.style.transition='all 0.4s';
+    setTimeout(()=>t.remove(),400); }, 4000);
+}
+
+// Close modal on overlay click
+document.getElementById('tradeModal').addEventListener('click',function(e){
+  if (e.target===this) closeTradeModal();
+});
+
+// Enter key on welcome screen
+document.getElementById('teamNameInput').addEventListener('keydown',function(e){
+  if (e.key==='Enter') startGame();
+});
+</script>
+</body>
+</html>
