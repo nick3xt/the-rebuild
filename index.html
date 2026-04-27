@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>The Rebuild — Dynasty Football Simulator</title>
+<title>The Rebuild â Dynasty Football Simulator</title>
 <style>
 :root {
   --bg: #0a0a0a;
@@ -293,7 +293,7 @@ body::before {
   border-radius: 10px;
 }
 
-/* PLAYER CARD — SCOUTING REPORT STYLE */
+/* PLAYER CARD â SCOUTING REPORT STYLE */
 .players-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -917,7 +917,7 @@ body::before {
 .trade-result-banner.reject { background: rgba(204,34,34,0.15); border: 1px solid var(--red); color: #ff6666; }
 .trade-result-banner.counter { background: rgba(234,179,8,0.1); border: 1px solid rgba(234,179,8,0.3); color: #eab308; }
 
-/* ENTRY SCREEN — hard gate */
+/* ENTRY SCREEN â hard gate */
 .entry-screen {
   position: fixed;
   inset: 0;
@@ -1095,7 +1095,7 @@ body::before {
   text-transform: uppercase;
   white-space: nowrap;
 }
-/* game container — hidden until entry gate passed */
+/* game container â hidden until entry gate passed */
 #gameContainer { display: none; }
 
 /* EMPTY STATE */
@@ -1150,7 +1150,7 @@ body::before {
 .sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
 .sidebar-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
-/* ── ENTRY SCREEN MOBILE ── */
+/* ââ ENTRY SCREEN MOBILE ââ */
 @media (max-width: 480px) {
   .entry-screen { padding: 32px 16px 80px; justify-content: flex-start; padding-top: 10vh; }
   .entry-title  { font-size: clamp(52px, 18vw, 90px); letter-spacing: -2px; }
@@ -1168,7 +1168,7 @@ body::before {
 </style>
 </head>
 <body>
-<!-- ENTRY SCREEN — hard gate, always on top -->
+<!-- ENTRY SCREEN â hard gate, always on top -->
 <div class="entry-screen" id="entryScreen">
   <div class="entry-content">
     <div class="entry-pre">The</div>
@@ -1179,28 +1179,28 @@ body::before {
     <!-- No save: show team name input + start button -->
     <div class="entry-new-panel" id="entryNewPanel">
       <input class="entry-team-input" id="teamNameInput" placeholder="Name your franchise..." maxlength="32" autocomplete="off" />
-      <button class="btn-entry-primary" onclick="startNewGame()">Start Your Rebuild →</button>
+      <button class="btn-entry-primary" onclick="startNewGame()">Start Your Rebuild â</button>
     </div>
 
     <!-- Save exists: continue or fresh start -->
     <div class="entry-save-panel" id="entrySavePanel" style="display:none">
-      <button class="btn-entry-primary" onclick="continueGame()">▶ Continue Your Rebuild</button>
+      <button class="btn-entry-primary" onclick="continueGame()">â¶ Continue Your Rebuild</button>
       <div class="entry-save-info" id="entrySaveInfo"></div>
       <div id="entryFreshSection">
-        <button class="btn-entry-ghost" onclick="startFreshPrompt()" style="margin-bottom:6px">↺ Start Fresh</button>
-        <div class="entry-warning" id="entryFreshWarning" style="display:none">⚠ This will permanently erase your current rebuild</div>
+        <button class="btn-entry-ghost" onclick="startFreshPrompt()" style="margin-bottom:6px">âº Start Fresh</button>
+        <div class="entry-warning" id="entryFreshWarning" style="display:none">â  This will permanently erase your current rebuild</div>
         <div class="entry-fresh-confirm" id="entryFreshConfirm" style="display:none">
           <input class="entry-team-input" id="teamNameInputFresh" placeholder="Name your new franchise..." maxlength="32" autocomplete="off" />
-          <button class="btn-entry-primary" style="background:#cc2222;box-shadow:0 4px 24px rgba(204,34,34,0.3)" onclick="confirmStartFresh()">Yes, Wipe It &amp; Rebuild →</button>
+          <button class="btn-entry-primary" style="background:#cc2222;box-shadow:0 4px 24px rgba(204,34,34,0.3)" onclick="confirmStartFresh()">Yes, Wipe It &amp; Rebuild â</button>
           <button class="btn-entry-ghost" onclick="cancelFresh()">Never Mind</button>
         </div>
       </div>
     </div>
   </div>
-  <div class="entry-specs">SuperFlex PPR TEP &nbsp;·&nbsp; 10-Team &nbsp;·&nbsp; 20 + 4IR + 4Taxi &nbsp;·&nbsp; D− → A+</div>
+  <div class="entry-specs">SuperFlex PPR TEP &nbsp;Â·&nbsp; 10-Team &nbsp;Â·&nbsp; 20 + 4IR + 4Taxi &nbsp;Â·&nbsp; Dâ â A+</div>
 </div>
 
-<!-- GAME CONTAINER — hidden until entry gate is passed -->
+<!-- GAME CONTAINER â hidden until entry gate is passed -->
 <div id="gameContainer">
 
 <!-- HEADER -->
@@ -1209,7 +1209,7 @@ body::before {
     <div class="logo">The <span>Rebuild</span></div>
     <div class="header-team">
       <input type="text" class="team-name-input" id="headerTeamName" value="My Team" onchange="updateTeamName(this.value)" />
-      <div class="grade-badge-header" id="headerGrade" style="color:#cc2222;border-color:#cc2222">D−</div>
+      <div class="grade-badge-header" id="headerGrade" style="color:#cc2222;border-color:#cc2222">Dâ</div>
       <div class="grade-progress-mini"><div class="grade-progress-fill" id="headerProgressBar" style="width:2%;background:#cc2222"></div></div>
     </div>
     <nav class="nav-tabs">
@@ -1254,7 +1254,7 @@ body::before {
         </div>
 
         <div id="subpanel-taxi" style="display:none">
-          <div class="section-title">Taxi Squad — 2025 Rookies</div>
+          <div class="section-title">Taxi Squad â 2025 Rookies</div>
           <div class="players-grid" id="taxi-grid"></div>
         </div>
 
@@ -1278,7 +1278,7 @@ body::before {
           <div class="trade-builder-header">
             <span class="trade-builder-title">Trade Builder</span>
             <select class="trade-target-select" id="tradePartnerSelect" onchange="updateTradePartner()">
-              <option value="">— Select Trade Partner —</option>
+              <option value="">â Select Trade Partner â</option>
             </select>
           </div>
 
@@ -1301,7 +1301,7 @@ body::before {
               <div class="trade-val-num" id="youSendValDisplay" style="color:var(--white)">0</div>
               <div class="trade-val-lbl">Your Offer</div>
             </div>
-            <div id="tradeFairness" class="trade-fairness fairness-ok">—</div>
+            <div id="tradeFairness" class="trade-fairness fairness-ok">â</div>
             <div class="trade-val-block">
               <div class="trade-val-num" id="youGetValDisplay" style="color:var(--white)">0</div>
               <div class="trade-val-lbl">You Receive</div>
@@ -1318,13 +1318,13 @@ body::before {
         </div>
 
         <!-- Your roster for trade builder -->
-        <div class="section-title">Your Roster — Click to Add/Remove</div>
+        <div class="section-title">Your Roster â Click to Add/Remove</div>
         <div class="players-grid" id="trade-your-roster-grid"></div>
       </div>
 
       <!-- INBOX TAB -->
       <div class="tab-panel" id="panel-inbox">
-        <div class="section-title">Trade Inbox — AI GM Offers</div>
+        <div class="section-title">Trade Inbox â AI GM Offers</div>
         <div id="inbox-full-list"></div>
       </div>
 
@@ -1357,7 +1357,7 @@ body::before {
       <div class="grade-card">
         <div class="grade-card-title">Team Grade</div>
         <div class="grade-display">
-          <div class="grade-big" id="sidebarGrade" style="color:#cc2222">D−</div>
+          <div class="grade-big" id="sidebarGrade" style="color:#cc2222">Dâ</div>
           <div class="grade-stats">
             <div class="grade-stat">KTC Value <strong id="sidebarValue">0</strong></div>
             <div class="grade-stat">Next Grade <strong id="sidebarNextGrade">D</strong></div>
@@ -1368,7 +1368,7 @@ body::before {
           <div class="grade-progress-inner" id="sidebarProgressBar" style="width:2%;background:#cc2222"></div>
         </div>
         <div class="grade-steps">
-          <span>D−</span><span>D</span><span>C</span><span>B</span><span>A−</span><span>A+</span>
+          <span>Dâ</span><span>D</span><span>C</span><span>B</span><span>Aâ</span><span>A+</span>
         </div>
       </div>
 
@@ -1378,7 +1378,7 @@ body::before {
           <span style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted)">Season Progress</span>
           <span id="weekBadge" style="font-size:12px;font-weight:700;color:var(--orange);font-family:'Courier New',monospace;background:rgba(255,107,0,0.1);padding:2px 9px;border-radius:4px;border:1px solid rgba(255,107,0,0.3)">OFF SEASON</span>
         </div>
-        <button id="advanceBtn" onclick="advanceSeason()" style="width:100%;background:linear-gradient(135deg,#1a3a1a,#0f280f);border:1px solid var(--green-bright);color:var(--green-glow);padding:11px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:0.5px;transition:all 0.2s;" onmouseover="this.style.background='linear-gradient(135deg,#1e4a1e,#122e12)'" onmouseout="this.style.background='linear-gradient(135deg,#1a3a1a,#0f280f)'" >⏭ BEGIN PRESEASON</button>
+        <button id="advanceBtn" onclick="advanceSeason()" style="width:100%;background:linear-gradient(135deg,#1a3a1a,#0f280f);border:1px solid var(--green-bright);color:var(--green-glow);padding:11px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:0.5px;transition:all 0.2s;" onmouseover="this.style.background='linear-gradient(135deg,#1e4a1e,#122e12)'" onmouseout="this.style.background='linear-gradient(135deg,#1a3a1a,#0f280f)'" >â­ BEGIN PRESEASON</button>
       </div>
 
       <!-- INBOX PREVIEW -->
@@ -1388,7 +1388,7 @@ body::before {
           <span class="inbox-badge" id="inboxCount">0</span>
         </div>
         <div id="inboxPreview">
-          <div class="empty-inbox">📭 No offers yet.<br>Start trading to get things moving.</div>
+          <div class="empty-inbox">ð­ No offers yet.<br>Start trading to get things moving.</div>
         </div>
       </div>
 
@@ -1521,7 +1521,7 @@ const PICKS_DB = [
 ];
 
 // Grade thresholds
-// Calibrated for real KTC SF values: D- roster ≈ 82K, A+ roster ≈ 200K+
+// Calibrated for real KTC SF values: D- roster â 82K, A+ roster â 200K+
 const GRADES = [
   {grade:'D-',min:0,      max:88000,  color:'#cc2222'},
   {grade:'D', min:88000,  max:100000, color:'#d03300'},
@@ -1565,18 +1565,18 @@ function playerGradeInfo(value) {
 // AI GMs
 // ====================================================
 const AI_GMS = [
-  {id:'gm1',name:'Marcus Webb',   nickname:'THE PICK SELLER',   personality:'pick_seller',   team:'Westside Wolves',   grade:'B+',avatar:'🐺',tradeFreq:0.7},
-  {id:'gm2',name:'Darnell Knox',  nickname:'THE WIN NOW GM',    personality:'win_now',       team:'Knox City Kings',   grade:'A', avatar:'👑',tradeFreq:0.75},
-  {id:'gm3',name:'Reggie Payne',  nickname:'THE FIRESALE GM',   personality:'firesale',      team:'Payne FC',          grade:'C+',avatar:'🔥',tradeFreq:0.85},
-  {id:'gm4',name:'Victor Cruz',   nickname:'THE PREMIUM CHASER',personality:'premium_chaser',team:'Cruz Control',      grade:'A+',avatar:'💎',tradeFreq:0.3},
-  {id:'gm5',name:'Tyrell Banks',  nickname:'THE AGGRESSIVE GM', personality:'aggressive',    team:'Banks Squad',       grade:'B', avatar:'⚡',tradeFreq:0.95},
-  {id:'gm6',name:'Donovan Reeves',nickname:'THE REBUILDER',     personality:'rebuilder',     team:'Future State FC',   grade:'B-',avatar:'🏗️',tradeFreq:0.65},
-  {id:'gm7',name:'Calvin James',  nickname:'THE NEGOTIATOR',    personality:'negotiator',    team:'James Gang',        grade:'B+',avatar:'🤝',tradeFreq:0.7},
-  {id:'gm8',name:'Devon Mills',   nickname:'THE CONTENDER',     personality:'contender',     team:'Mills Machine',     grade:'A-',avatar:'🏆',tradeFreq:0.4},
-  {id:'gm9',name:'Andre Stone',   nickname:'THE DATA GM',       personality:'data_gm',       team:'Stone Analytics',   grade:'A', avatar:'📊',tradeFreq:0.55},
+  {id:'gm1',name:'Marcus Webb',   nickname:'THE PICK SELLER',   personality:'pick_seller',   team:'Westside Wolves',   grade:'B+',avatar:'ðº',tradeFreq:0.7},
+  {id:'gm2',name:'Darnell Knox',  nickname:'THE WIN NOW GM',    personality:'win_now',       team:'Knox City Kings',   grade:'A', avatar:'ð',tradeFreq:0.75},
+  {id:'gm3',name:'Reggie Payne',  nickname:'THE FIRESALE GM',   personality:'firesale',      team:'Payne FC',          grade:'C+',avatar:'ð¥',tradeFreq:0.85},
+  {id:'gm4',name:'Victor Cruz',   nickname:'THE PREMIUM CHASER',personality:'premium_chaser',team:'Cruz Control',      grade:'A+',avatar:'ð',tradeFreq:0.3},
+  {id:'gm5',name:'Tyrell Banks',  nickname:'THE AGGRESSIVE GM', personality:'aggressive',    team:'Banks Squad',       grade:'B', avatar:'â¡',tradeFreq:0.95},
+  {id:'gm6',name:'Donovan Reeves',nickname:'THE REBUILDER',     personality:'rebuilder',     team:'Future State FC',   grade:'B-',avatar:'ðï¸',tradeFreq:0.65},
+  {id:'gm7',name:'Calvin James',  nickname:'THE NEGOTIATOR',    personality:'negotiator',    team:'James Gang',        grade:'B+',avatar:'ð¤',tradeFreq:0.7},
+  {id:'gm8',name:'Devon Mills',   nickname:'THE CONTENDER',     personality:'contender',     team:'Mills Machine',     grade:'A-',avatar:'ð',tradeFreq:0.4},
+  {id:'gm9',name:'Andre Stone',   nickname:'THE DATA GM',       personality:'data_gm',       team:'Stone Analytics',   grade:'A', avatar:'ð',tradeFreq:0.55},
 ];
 
-// AI GM rosters — player IDs + pick IDs
+// AI GM rosters â player IDs + pick IDs
 const GM_ROSTER_DATA = {
   gm1:{players:['p1','p34','p35','p70','p71','p6','p36','p37','p111','p77','p78','p41','p84','p85','p43','p116','p89','p88','p50','p87'],picks:['pick_2026_1e','pick_2026_2e','pick_2027_1m']},
   gm2:{players:['p5','p30','p36','p70','p71','p110','p35','p74','p10','p32','p40','p76','p77','p114','p33','p44','p79','p86','p117','p82'],picks:['pick_2026_4']},
@@ -1762,7 +1762,7 @@ function generateDMinusRoster(){
     const dist=Math.abs(total-55000);
     if(dist<bestDist){bestDist=dist;best=r;}
   }
-  if(!best) throw new Error('Roster generation failed after 30 attempts — no valid roster found');
+  if(!best) throw new Error('Roster generation failed after 30 attempts â no valid roster found');
   return best;
 }
 
@@ -1782,10 +1782,10 @@ function evaluateTrade(offeredAssets, requestedAssets, gmPersonality) {
   const receivedPicks   = requestedAssets.filter(a=>a.id?.startsWith('pick'));
 
   const msgs = {
-    accept_great: ['Deal! Love this for us.','Done. Let\'s make it official.','That works. Shaking hands now.','Agreed — fire off the trade.'],
+    accept_great: ['Deal! Love this for us.','Done. Let\'s make it official.','That works. Shaking hands now.','Agreed â fire off the trade.'],
     accept_ok: ['Fine by me. Deal.','Value checks out, we\'re good.','I can live with that.','Alright, let\'s do it.'],
-    counter_close: ['Close — just need a little more.','Almost there, add something small.','Getting warm. Sweeten it slightly.','Right direction, minor tweak needed.'],
-    counter_far:  ['Need more to make this work.','Value\'s off. Come back stronger.','Not quite there — add more.','Interesting start, but I need more.'],
+    counter_close: ['Close â just need a little more.','Almost there, add something small.','Getting warm. Sweeten it slightly.','Right direction, minor tweak needed.'],
+    counter_far:  ['Need more to make this work.','Value\'s off. Come back stronger.','Not quite there â add more.','Interesting start, but I need more.'],
     reject: ['Hard pass.','Not enough value here. Pass.','Nope, doesn\'t work for me.','Way off. Try again.','I\'ll pass on this one.'],
   };
   const rnd = arr => arr[Math.floor(Math.random()*arr.length)];
@@ -1841,7 +1841,7 @@ function evaluateTrade(offeredAssets, requestedAssets, gmPersonality) {
     }
     case 'contender': {
       const improvesNow = receivedPlayers.some(p=>p.value>=6000);
-      if (improvesNow && ratio>=0.88) return {result:'accept', msg:'If it helps me win now — done. '+rnd(msgs.accept_great)};
+      if (improvesNow && ratio>=0.88) return {result:'accept', msg:'If it helps me win now â done. '+rnd(msgs.accept_great)};
       if (ratio>=0.95) return {result:'accept', msg: rnd(msgs.accept_ok)};
       if (improvesNow && ratio>=0.72) return {result:'counter', msg:'Getting there. Need a bit more value. '+rnd(msgs.counter_close)};
       return {result:'reject', msg:'Doesn\'t move my needle enough. '+rnd(msgs.reject)};
@@ -1849,7 +1849,7 @@ function evaluateTrade(offeredAssets, requestedAssets, gmPersonality) {
     case 'data_gm': {
       if (ratio>=0.95) return {result:'accept', msg:'Value math clears my threshold. '+rnd(msgs.accept_ok)};
       if (ratio>=0.84) return {result:'counter', msg:'My model needs 5% more value on your end. '+rnd(msgs.counter_close)};
-      return {result:'reject', msg:'Fails my value screen. I need ratio ≥ 0.95. Hard pass.'};
+      return {result:'reject', msg:'Fails my value screen. I need ratio â¥ 0.95. Hard pass.'};
     }
     default:
       if (ratio>=0.88) return {result:'accept', msg: rnd(msgs.accept_ok)};
@@ -1859,7 +1859,7 @@ function evaluateTrade(offeredAssets, requestedAssets, gmPersonality) {
 }
 
 // Generate a proactive offer from an AI GM toward the human player
-// Build a bundle of GM assets worth targetValue ± tolerance (default ±13%)
+// Build a bundle of GM assets worth targetValue Â± tolerance (default Â±13%)
 // preferType: 'picks' | 'players' | 'mixed'
 function buildFairBundle(gmPlayers, gmPicks, targetValue, preferType, tol) {
   tol = tol || 0.13;
@@ -1883,7 +1883,7 @@ function buildFairBundle(gmPlayers, gmPicks, targetValue, preferType, tol) {
       if (v >= minV && v <= maxV) return [pool[i], pool[j]];
     }
   }
-  // Greedy accumulation — add assets while under maxV, stop when >= minV
+  // Greedy accumulation â add assets while under maxV, stop when >= minV
   let bundle = [], total = 0;
   for (const a of pool) {
     if (total + a.value <= maxV) { bundle.push(a); total += a.value; }
@@ -1919,7 +1919,7 @@ function tryGenerateProactiveOffer(gm, gmRoster, humanRoster) {
       const bundle = buildFairBundle(gmPlayers, gmPicks, target.value, 'picks', 0.12);
       if (!bundle) break;
       offer = {from:gm.id, youGive:[target], youGet:bundle,
-        msg:`Looking to add ${target.name} to my squad. Offering ${bundle.map(a=>a.name).join(' + ')} — fair KTC return.`};
+        msg:`Looking to add ${target.name} to my squad. Offering ${bundle.map(a=>a.name).join(' + ')} â fair KTC return.`};
       break;
     }
 
@@ -1936,7 +1936,7 @@ function tryGenerateProactiveOffer(gm, gmRoster, humanRoster) {
     }
 
     case 'firesale': {
-      // Wants to dump an aging player — offers them, asks for fair value back
+      // Wants to dump an aging player â offers them, asks for fair value back
       const aging = gmPlayers.filter(p=>p.age>=30).sort((a,b)=>b.value-a.value);
       if (!aging.length) break;
       const dump = aging[Math.floor(Math.random()*Math.min(2,aging.length))];
@@ -1946,7 +1946,7 @@ function tryGenerateProactiveOffer(gm, gmRoster, humanRoster) {
       if (!want) break;
       // Offer: human gives want, human gets dump
       offer = {from:gm.id, youGive:want, youGet:[dump],
-        msg:`Firesale — ${dump.name} (age ${dump.age}) needs a new home. I want ${want.map(a=>a.name).join(' + ')} back. Works?`};
+        msg:`Firesale â ${dump.name} (age ${dump.age}) needs a new home. I want ${want.map(a=>a.name).join(' + ')} back. Works?`};
       break;
     }
 
@@ -1970,7 +1970,7 @@ function tryGenerateProactiveOffer(gm, gmRoster, humanRoster) {
       const bundle = buildFairBundle(gmPlayers, gmPicks, target.value, 'picks', 0.12);
       if (!bundle) break;
       offer = {from:gm.id, youGive:[target], youGet:bundle,
-        msg:`${target.name} fits my timeline. Offering ${bundle.map(a=>a.name).join(' + ')} — future capital for your rebuild.`};
+        msg:`${target.name} fits my timeline. Offering ${bundle.map(a=>a.name).join(' + ')} â future capital for your rebuild.`};
       break;
     }
 
@@ -1988,7 +1988,7 @@ function tryGenerateProactiveOffer(gm, gmRoster, humanRoster) {
     default: break;
   }
 
-  // Hard fairness gate — never let any offer slip through at crazy value
+  // Hard fairness gate â never let any offer slip through at crazy value
   if (!offer) return null;
   if (!offerIsFair(offer.youGive, offer.youGet)) return null;
   return offer;
@@ -2067,7 +2067,7 @@ function showEntryScreen() {
     document.getElementById('entrySavePanel').style.display = 'flex';
     const d = new Date(save.savedAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
     document.getElementById('entrySaveInfo').textContent =
-      `${save.teamName} · ${save.phase === 'OFF_SEASON' ? 'Off Season' : save.phase === 'PRESEASON' ? 'Preseason' : save.phase === 'PLAYOFFS' ? 'Playoffs' : `Week ${save.week}`} · Saved ${d}`;
+      `${save.teamName} Â· ${save.phase === 'OFF_SEASON' ? 'Off Season' : save.phase === 'PRESEASON' ? 'Preseason' : save.phase === 'PLAYOFFS' ? 'Playoffs' : `Week ${save.week}`} Â· Saved ${d}`;
   } else {
     document.getElementById('entryNewPanel').style.display = 'flex';
     document.getElementById('entryNewPanel').style.flexDirection = 'column';
@@ -2115,8 +2115,8 @@ function startNewGame() {
       const panel = document.getElementById('entryNewPanel');
       if (panel) panel.appendChild(errDiv);
     }
-    errDiv.textContent = '❌ Failed to generate roster: ' + (err.message || String(err));
-    if (btn) { btn.textContent = 'Start Your Rebuild →'; btn.disabled = false; }
+    errDiv.textContent = 'â Failed to generate roster: ' + (err.message || String(err));
+    if (btn) { btn.textContent = 'Start Your Rebuild â'; btn.disabled = false; }
   }
 }
 
@@ -2143,7 +2143,7 @@ function continueGame() {
   hideEntryScreen();
   renderAll();
   scheduleAIOffers();
-  showToast('👋 Welcome back!', `Continuing your rebuild as ${STATE.teamName}`, 'success');
+  showToast('ð Welcome back!', `Continuing your rebuild as ${STATE.teamName}`, 'success');
 }
 
 function _initNewGame(name) {
@@ -2176,11 +2176,11 @@ function _initNewGame(name) {
 function _populateTradeSelect() {
   const sel = document.getElementById('tradePartnerSelect');
   if (!sel) return;
-  sel.innerHTML = '<option value="">— Select Trade Partner —</option>';
+  sel.innerHTML = '<option value="">â Select Trade Partner â</option>';
   AI_GMS.forEach(gm => {
     const opt = document.createElement('option');
     opt.value = gm.id;
-    opt.textContent = `${gm.avatar} ${gm.name} — ${gm.team}`;
+    opt.textContent = `${gm.avatar} ${gm.name} â ${gm.team}`;
     sel.appendChild(opt);
   });
 }
@@ -2207,7 +2207,7 @@ function scheduleAIOffers() {
         renderInboxPreview();
         renderInboxFull();
         updateInboxBadge();
-        showToast(`📩 New offer from ${gm.name}`, offer.msg.substring(0,80)+'...', 'info');
+        showToast(`ð© New offer from ${gm.name}`, offer.msg.substring(0,80)+'...', 'info');
       }
     }
     scheduleAIOffers();
@@ -2262,10 +2262,10 @@ function renderGradeCard() {
   sg.style.color = gi.color;
   document.getElementById('sidebarValue').textContent = total.toLocaleString();
   document.getElementById('sidebarNextGrade').textContent = nextGrade.grade;
-  document.getElementById('sidebarNeed').textContent = need > 0 ? '+' + need.toLocaleString() : '✓ Max';
+  document.getElementById('sidebarNeed').textContent = need > 0 ? '+' + need.toLocaleString() : 'â Max';
   const spb = document.getElementById('sidebarProgressBar');
 
-  // Full progress relative to D- → A+ scale
+  // Full progress relative to D- â A+ scale
   const fullMin = GRADES[0].min, fullMax = GRADES[GRADES.length-1].min;
   const fullPct = Math.min(100, Math.round(((total - fullMin) / (fullMax - fullMin)) * 100));
   spb.style.width = Math.max(2,fullPct) + '%';
@@ -2304,12 +2304,12 @@ function renderPlayerCard(asset, clickable, isSelected, context) {
       <div class="player-avatar avatar-${asset.pos}">${initials}</div>
       <div class="player-info">
         <div class="player-name">${asset.name}</div>
-        <div class="player-meta">${asset.team || ''} · Age ${asset.age || '?'}</div>
+        <div class="player-meta">${asset.team || ''} Â· Age ${asset.age || '?'}</div>
       </div>
     </div>
     <div class="player-card-bottom">
       <span class="pos-badge pos-${asset.pos}">${asset.pos}</span>
-      <span class="player-value">${asset.value?.toLocaleString() || '—'}</span>
+      <span class="player-value">${asset.value?.toLocaleString() || 'â'}</span>
       <span class="player-grade-stamp" style="color:${gi.color};border-color:${gi.color}">${gi.grade}</span>
     </div>
   </div>`;
@@ -2323,7 +2323,7 @@ function renderPickCard(pick, clickable, isSelected, context) {
   return `<div class="pick-card ${sel}" ${onClick} data-id="${pick.id}">
     <span class="pos-badge pos-PICK">PICK</span>
     <div class="pick-name" style="margin-top:8px">${pick.name}</div>
-    <div class="pick-value">${pick.value?.toLocaleString() || '—'} KTC</div>
+    <div class="pick-value">${pick.value?.toLocaleString() || 'â'} KTC</div>
   </div>`;
 }
 
@@ -2395,7 +2395,7 @@ function renderPartnerRoster(gmId) {
   const roster = STATE.gmRosters[gmId];
   if (!roster || !gm) return;
   document.getElementById('partnerRosterSection').style.display='block';
-  document.getElementById('partnerRosterTitle').textContent = `${gm.avatar} ${gm.name}'s Roster — Click to Add to Trade`;
+  document.getElementById('partnerRosterTitle').textContent = `${gm.avatar} ${gm.name}'s Roster â Click to Add to Trade`;
   const all = [
     ...(roster.starters||[]),
     ...(roster.picks||[]),
@@ -2443,22 +2443,22 @@ function updateSeasonDisplay() {
 
   if (STATE.phase === 'OFF_SEASON') {
     label   = 'OFF SEASON';
-    btnText = '⏭ BEGIN PRESEASON';
+    btnText = 'â­ BEGIN PRESEASON';
   } else if (STATE.phase === 'PRESEASON') {
     label   = 'PRESEASON';
-    btnText = '⏭ START REGULAR SEASON';
+    btnText = 'â­ START REGULAR SEASON';
   } else if (STATE.phase === 'REGULAR') {
     const isBye = STATE.week === STATE.byeWeek;
     label   = isBye ? `BYE WEEK ${STATE.week}` : `WEEK ${STATE.week}`;
     btnText = STATE.week >= 18
-      ? '⏭ ENTER PLAYOFFS'
-      : `⏭ ADVANCE TO WEEK ${STATE.week + 1}`;
+      ? 'â­ ENTER PLAYOFFS'
+      : `â­ ADVANCE TO WEEK ${STATE.week + 1}`;
   } else if (STATE.phase === 'PLAYOFFS') {
-    if (STATE.playoffRound === 1)       { label = 'PLAYOFFS — ROUND 1';       btnText = '⏭ SIMULATE ROUND 1'; }
-    else if (STATE.playoffRound === 2)  { label = 'PLAYOFFS — SEMI-FINAL';    btnText = '⏭ SIMULATE SEMI-FINAL'; }
-    else if (STATE.playoffRound === 3)  { label = 'PLAYOFFS — CHAMPIONSHIP';  btnText = '⏭ SIMULATE CHAMPIONSHIP'; }
-    else if (STATE.playoffRound === 4)  { label = '🏆 CHAMPION';              btnText = '🔄 START NEW REBUILD'; }
-    else if (STATE.playoffRound === -1) { label = '❌ ELIMINATED';            btnText = '🔄 START NEW REBUILD'; }
+    if (STATE.playoffRound === 1)       { label = 'PLAYOFFS â ROUND 1';       btnText = 'â­ SIMULATE ROUND 1'; }
+    else if (STATE.playoffRound === 2)  { label = 'PLAYOFFS â SEMI-FINAL';    btnText = 'â­ SIMULATE SEMI-FINAL'; }
+    else if (STATE.playoffRound === 3)  { label = 'PLAYOFFS â CHAMPIONSHIP';  btnText = 'â­ SIMULATE CHAMPIONSHIP'; }
+    else if (STATE.playoffRound === 4)  { label = 'ð CHAMPION';              btnText = 'ð START NEW REBUILD'; }
+    else if (STATE.playoffRound === -1) { label = 'â ELIMINATED';            btnText = 'ð START NEW REBUILD'; }
   }
 
   if (wb)  wb.textContent  = label;
@@ -2474,28 +2474,28 @@ function _simulatePlayoffRound() {
   if (STATE.playoffRound === 1) {
     if (gi <= GRADE_ORDER.indexOf('C+')) {
       STATE.playoffRound = -1;
-      showToast('❌ ROUND 1 EXIT', `${grade} isn't enough. The rebuild continues... or doesn't.`, 'info');
+      showToast('â ROUND 1 EXIT', `${grade} isn't enough. The rebuild continues... or doesn't.`, 'info');
     } else {
       STATE.playoffRound = 2;
       _generateWeeklyOffers(2);
-      showToast('✅ ROUND 1 WIN', 'Semi-finals await. Don't blow it.', 'success');
+      showToast('â ROUND 1 WIN', "Semi-finals await. Don't blow it.", 'success');
     }
   } else if (STATE.playoffRound === 2) {
     if (gi <= GRADE_ORDER.indexOf('B+')) {
       STATE.playoffRound = -1;
-      showToast('❌ SEMI-FINAL EXIT', `Grade ${grade}. Close, but not close enough.`, 'info');
+      showToast('â SEMI-FINAL EXIT', `Grade ${grade}. Close, but not close enough.`, 'info');
     } else {
       STATE.playoffRound = 3;
       _generateWeeklyOffers(2);
-      showToast('✅ SEMI-FINAL WIN', 'Championship game. Everything on the line.', 'success');
+      showToast('â SEMI-FINAL WIN', 'Championship game. Everything on the line.', 'success');
     }
   } else if (STATE.playoffRound === 3) {
     if (gi >= GRADE_ORDER.indexOf('A-')) {
       STATE.playoffRound = 4;
-      showToast('🏆 CHAMPION', 'You rebuilt the dynasty. They doubted you.', 'success');
+      showToast('ð CHAMPION', 'You rebuilt the dynasty. They doubted you.', 'success');
     } else {
       STATE.playoffRound = -1;
-      showToast('❌ CHAMPIONSHIP LOSS', `Grade ${grade} falls one round short. So close.`, 'info');
+      showToast('â CHAMPIONSHIP LOSS', `Grade ${grade} falls one round short. So close.`, 'info');
     }
   } else if (STATE.playoffRound === 4 || STATE.playoffRound === -1) {
     showEntryScreen();
@@ -2508,14 +2508,14 @@ function advanceSeason() {
     STATE.phase = 'PRESEASON';
     STATE.inbox.forEach(o => o.read = true);
     const n = _generateWeeklyOffers(2);
-    showToast('🏈 PRESEASON', `AI GMs are making their moves. ${n} offer${n!==1?'s':''} incoming.`, 'info');
+    showToast('ð PRESEASON', `AI GMs are making their moves. ${n} offer${n!==1?'s':''} incoming.`, 'info');
 
   } else if (STATE.phase === 'PRESEASON') {
     STATE.phase = 'REGULAR';
     STATE.week = 1;
     STATE.inbox.forEach(o => o.read = true);
     const n = _generateWeeklyOffers(3);
-    showToast('🏈 WEEK 1 — REGULAR SEASON', `The season is live. ${n} new trade proposal${n!==1?'s':''}.`, 'info');
+    showToast('ð WEEK 1 â REGULAR SEASON', `The season is live. ${n} new trade proposal${n!==1?'s':''}.`, 'info');
 
   } else if (STATE.phase === 'REGULAR') {
     if (STATE.week >= 18) {
@@ -2523,16 +2523,16 @@ function advanceSeason() {
       STATE.playoffRound = 1;
       STATE.inbox.forEach(o => o.read = true);
       _generateWeeklyOffers(2);
-      showToast('🏆 PLAYOFFS BEGIN', 'Your rebuild is being tested. Make it count.', 'info');
+      showToast('ð PLAYOFFS BEGIN', 'Your rebuild is being tested. Make it count.', 'info');
     } else {
       STATE.week++;
       STATE.inbox.forEach(o => o.read = true);
       const isBye = STATE.week === STATE.byeWeek;
       const n = _generateWeeklyOffers(isBye ? 1 : 3);
       if (isBye) {
-        showToast(`😴 BYE WEEK ${STATE.week}`, 'Enjoy the bye. Your roster still looks terrible.', 'info');
+        showToast(`ð´ BYE WEEK ${STATE.week}`, 'Enjoy the bye. Your roster still looks terrible.', 'info');
       } else {
-        showToast(`⏭ WEEK ${STATE.week}`, `${n} new trade proposal${n!==1?'s':''}.`, 'info');
+        showToast(`â­ WEEK ${STATE.week}`, `${n} new trade proposal${n!==1?'s':''}.`, 'info');
       }
     }
 
@@ -2556,7 +2556,7 @@ function renderOfferCard(offer, isPreview) {
   const youGiveVal = (offer.youGive||[]).reduce((s,a)=>s+(a.value||0),0);
   const youGetVal  = (offer.youGet||[]).reduce((s,a)=>s+(a.value||0),0);
   const ratio = youGetVal / Math.max(youGiveVal,1);
-  const fairnessLabel = ratio >= 0.90 ? '✅ FAIR TRADE' : ratio >= 0.72 ? '⚠️ SLIGHT OVERPAY' : '❌ BAD VALUE';
+  const fairnessLabel = ratio >= 0.90 ? 'â FAIR TRADE' : ratio >= 0.72 ? 'â ï¸ SLIGHT OVERPAY' : 'â BAD VALUE';
   const fairnessColor = ratio >= 0.90 ? 'var(--green-glow)' : ratio >= 0.72 ? '#eab308' : 'var(--red)';
 
   const giveNames = (offer.youGive||[]).map(a=>`<span class="offer-asset-chip">${a.name}</span>`).join('');
@@ -2564,8 +2564,8 @@ function renderOfferCard(offer, isPreview) {
 
   const actions = isPreview ? '' : `
     <div class="offer-actions">
-      <button class="btn-accept" onclick="acceptOffer('${offer.id}')">✓ ACCEPT</button>
-      <button class="btn-reject" onclick="rejectOffer('${offer.id}')">✗ DECLINE</button>
+      <button class="btn-accept" onclick="acceptOffer('${offer.id}')">â ACCEPT</button>
+      <button class="btn-reject" onclick="rejectOffer('${offer.id}')">â DECLINE</button>
     </div>`;
 
   return `<div class="offer-item ${offer.read?'read':''}" onclick="markRead('${offer.id}')">
@@ -2608,7 +2608,7 @@ function renderInboxPreview() {
   const container = document.getElementById('inboxPreview');
   const recent = STATE.inbox.slice(0,3);
   if (!recent.length) {
-    container.innerHTML = '<div class="empty-inbox">📭 No offers yet.<br>Start trading to get things moving.</div>';
+    container.innerHTML = '<div class="empty-inbox">ð­ No offers yet.<br>Start trading to get things moving.</div>';
     return;
   }
   container.innerHTML = recent.map(o=>renderOfferCard(o,true)).join('');
@@ -2617,7 +2617,7 @@ function renderInboxPreview() {
 function renderInboxFull() {
   const container = document.getElementById('inbox-full-list');
   if (!STATE.inbox.length) {
-    container.innerHTML = '<div class="empty-inbox" style="padding:40px;text-align:center;color:var(--muted)">📭 No trade offers yet.<br><br>Your rebuild starts here. Make some moves and the GMs will start coming to you.</div>';
+    container.innerHTML = '<div class="empty-inbox" style="padding:40px;text-align:center;color:var(--muted)">ð­ No trade offers yet.<br><br>Your rebuild starts here. Make some moves and the GMs will start coming to you.</div>';
     return;
   }
   container.innerHTML = STATE.inbox.map(o=>renderOfferCard(o,false)).join('');
@@ -2640,7 +2640,7 @@ function acceptOffer(offerId) {
   // Remove from inbox
   STATE.inbox = STATE.inbox.filter(o=>o.id!==offerId);
 
-  showToast(`🤝 Trade Accepted!`, `You accepted ${gm.name}'s offer. Your roster has been updated.`, 'success');
+  showToast(`ð¤ Trade Accepted!`, `You accepted ${gm.name}'s offer. Your roster has been updated.`, 'success');
   saveGame();
   renderAll();
 }
@@ -2653,7 +2653,7 @@ function rejectOffer(offerId) {
   // Move to end
   STATE.inbox = STATE.inbox.filter(o=>o.id!==offerId);
 
-  showToast(`❌ Offer Declined`, `You declined ${gm.name}'s trade offer.`, 'info');
+  showToast(`â Offer Declined`, `You declined ${gm.name}'s trade offer.`, 'info');
   renderInboxPreview();
   renderInboxFull();
   updateInboxBadge();
@@ -2767,7 +2767,7 @@ function renderTradeBuilder() {
       <div class="trade-slot-chip">
         <span class="pos-badge pos-${a.year?'PICK':a.pos||'PICK'}">${a.year?'PICK':a.pos||'PICK'}</span>
         ${a.name}
-        <span class="trade-chip-remove" onclick="removeFromTrade('${a.id}','give')">×</span>
+        <span class="trade-chip-remove" onclick="removeFromTrade('${a.id}','give')">Ã</span>
       </div>`).join('');
   }
 
@@ -2784,7 +2784,7 @@ function renderTradeBuilder() {
       <div class="trade-slot-chip">
         <span class="pos-badge pos-${a.year?'PICK':a.pos||'PICK'}">${a.year?'PICK':a.pos||'PICK'}</span>
         ${a.name}
-        <span class="trade-chip-remove" onclick="removeFromTrade('${a.id}','get')">×</span>
+        <span class="trade-chip-remove" onclick="removeFromTrade('${a.id}','get')">Ã</span>
       </div>`).join('');
   }
 
@@ -2798,19 +2798,19 @@ function renderTradeBuilder() {
 
   const fairEl = document.getElementById('tradeFairness');
   if (!give.length && !get.length) {
-    fairEl.textContent = '—'; fairEl.className = 'trade-fairness fairness-ok';
+    fairEl.textContent = 'â'; fairEl.className = 'trade-fairness fairness-ok';
   } else if (ratio >= 0.90) {
-    fairEl.textContent = '✅ FAIR'; fairEl.className = 'trade-fairness fairness-fair';
+    fairEl.textContent = 'â FAIR'; fairEl.className = 'trade-fairness fairness-fair';
   } else if (ratio >= 0.72) {
-    fairEl.textContent = '⚠️ OK'; fairEl.className = 'trade-fairness fairness-ok';
+    fairEl.textContent = 'â ï¸ OK'; fairEl.className = 'trade-fairness fairness-ok';
   } else {
-    fairEl.textContent = '❌ LOW'; fairEl.className = 'trade-fairness fairness-bad';
+    fairEl.textContent = 'â LOW'; fairEl.className = 'trade-fairness fairness-bad';
   }
 
   const btn = document.getElementById('tradeSubmitBtn');
   if (give.length > 0 && get.length > 0 && STATE.tradePartnerId) {
     btn.disabled = false;
-    btn.textContent = 'SEND TRADE PROPOSAL →';
+    btn.textContent = 'SEND TRADE PROPOSAL â';
   } else {
     btn.disabled = true;
     btn.textContent = 'SELECT PARTNER & ASSETS';
@@ -2830,7 +2830,7 @@ function submitTrade() {
   let content = '';
   if (result.result === 'accept') {
     content = `
-      <div class="trade-result-banner accept">✅ TRADE ACCEPTED</div>
+      <div class="trade-result-banner accept">â TRADE ACCEPTED</div>
       <div style="font-size:14px;margin-bottom:16px">${gm.avatar} <strong>${gm.name}</strong> says: <em>"${result.msg}"</em></div>
       <div style="font-size:13px;color:var(--muted);margin-bottom:16px">The trade has been executed. Your roster has been updated.</div>`;
     executeTrade(give, get, gmId);
@@ -2842,12 +2842,12 @@ function submitTrade() {
     const getVal  = get.reduce((s,a)=>s+(a.value||0),0);
     const gap = getVal - giveVal;
     content = `
-      <div class="trade-result-banner counter">↔️ COUNTER OFFER</div>
+      <div class="trade-result-banner counter">âï¸ COUNTER OFFER</div>
       <div style="font-size:14px;margin-bottom:16px">${gm.avatar} <strong>${gm.name}</strong> says: <em>"${result.msg}"</em></div>
       <div style="font-size:13px;color:var(--muted);margin-bottom:12px">Value gap: <strong style="color:#eab308">~${Math.abs(gap).toLocaleString()} KTC</strong> needed. Try adding more value to your offer.</div>`;
   } else {
     content = `
-      <div class="trade-result-banner reject">❌ TRADE REJECTED</div>
+      <div class="trade-result-banner reject">â TRADE REJECTED</div>
       <div style="font-size:14px;margin-bottom:16px">${gm.avatar} <strong>${gm.name}</strong> says: <em>"${result.msg}"</em></div>
       <div style="font-size:13px;color:var(--muted)">They weren't interested this time. Try adjusting your offer or approach a different GM.</div>`;
   }
