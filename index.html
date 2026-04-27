@@ -41,15 +41,50 @@ body {
 }
 
 /* INITIALS AVATAR */
-.player-avatar{width:44px;height:44px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;letter-spacing:-0.5px;border:2px solid rgba(255,255,255,0.08);}
-.avatar-QB{background:rgba(139,92,246,0.22);border-color:rgba(139,92,246,0.4);color:#c4b5fd;}
-.avatar-RB{background:rgba(34,197,94,0.16);border-color:rgba(34,197,94,0.35);color:#86efac;}
-.avatar-WR{background:rgba(59,130,246,0.16);border-color:rgba(59,130,246,0.35);color:#93c5fd;}
-.avatar-TE{background:rgba(249,115,22,0.16);border-color:rgba(249,115,22,0.35);color:#fdba74;}
+.player-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  border: 2px solid rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.9);
+}
+.avatar-QB { background: rgba(139,92,246,0.25); border-color: rgba(139,92,246,0.4); color: #c4b5fd; }
+.avatar-RB { background: rgba(34,197,94,0.18); border-color: rgba(34,197,94,0.35); color: #86efac; }
+.avatar-WR { background: rgba(59,130,246,0.18); border-color: rgba(59,130,246,0.35); color: #93c5fd; }
+.avatar-TE { background: rgba(249,115,22,0.18); border-color: rgba(249,115,22,0.35); color: #fdba74; }
+.avatar-PICK { background: rgba(234,179,8,0.15); border-color: rgba(234,179,8,0.3); color: #fde047; font-size: 18px; }
+
 /* POSITION DIVIDER */
-.pos-divider{grid-column:1/-1;display:flex;align-items:center;gap:10px;padding:6px 0 2px;margin-top:4px;}
-.pos-divider-label{font-size:10px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;white-space:nowrap;padding:2px 8px;border-radius:4px;}
-.pos-divider-line{flex:1;height:1px;opacity:0.25;}
+.pos-divider {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0 2px;
+  margin-top: 4px;
+}
+.pos-divider-label {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+.pos-divider-line {
+  flex: 1;
+  height: 1px;
+  opacity: 0.25;
+}
+
 /* TURF BACKGROUND */
 body::before {
   content: '';
@@ -110,7 +145,7 @@ body::before {
   margin: 0 auto;
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
   height: 60px;
 }
 .logo {
@@ -159,6 +194,8 @@ body::before {
 }
 .grade-progress-mini {
   flex: 1;
+  max-width: 140px;
+  min-width: 50px;
   height: 6px;
   background: var(--border);
   border-radius: 3px;
@@ -170,11 +207,32 @@ body::before {
   border-radius: 3px;
   transition: width 0.6s ease, background 0.6s ease;
 }
-.nav-tabs { display:flex; gap:3px; flex-shrink:0; margin-left:auto; }
-.nav-tab { padding:6px 15px; border-radius:6px; font-size:13px; font-weight:600; cursor:pointer; border:1px solid transparent; color:var(--muted); transition:all 0.2s; white-space:nowrap; display:flex; align-items:center; gap:5px; }
-.nav-tab:hover { color:var(--white); border-color:var(--border); }
-.nav-tab.active { background:var(--orange); color:white; border-color:var(--orange); }
-@media(max-width:768px){.nav-tab{padding:6px 9px;font-size:11px;}.header-team{min-width:0;flex:1;}}
+.nav-tabs {
+  display: flex;
+  gap: 2px;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+.nav-tab {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  color: var(--muted);
+  transition: all 0.2s;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.nav-tab:hover { color: var(--white); border-color: var(--border); }
+.nav-tab.active { background: var(--orange); color: white; border-color: var(--orange); }
+@media (max-width: 768px) {
+  .nav-tab { padding: 6px 10px; font-size: 12px; }
+  .header-team { min-width: 0; flex: 1; }
+}
 .inbox-dot {
   display: inline-block;
   width: 8px; height: 8px;
@@ -1172,35 +1230,7 @@ body::before {
         </div>
 
         <div id="subpanel-starters">
-          <!-- RED ZONE -->
-          <div class="zone-section">
-            <div class="yard-divider" data-label="RED ZONE — TOP ASSETS"></div>
-            <div class="zone-header">
-              <span class="zone-label">🔴 Red Zone</span>
-              <span class="zone-count" id="redzone-count">0 assets</span>
-            </div>
-            <div class="players-grid" id="redzone-grid"></div>
-          </div>
-
-          <!-- MIDFIELD -->
-          <div class="zone-section">
-            <div class="yard-divider" data-label="MIDFIELD — SOLID CONTRIBUTORS"></div>
-            <div class="zone-header">
-              <span class="zone-label">⚡ Midfield</span>
-              <span class="zone-count" id="midfield-count">0 assets</span>
-            </div>
-            <div class="players-grid" id="midfield-grid"></div>
-          </div>
-
-          <!-- OWN 20 -->
-          <div class="zone-section">
-            <div class="yard-divider" data-label="OWN 20 — REBUILD PIECES"></div>
-            <div class="zone-header">
-              <span class="zone-label">🏗️ Own 20</span>
-              <span class="zone-count" id="own20-count">0 assets</span>
-            </div>
-            <div class="players-grid" id="own20-grid"></div>
-          </div>
+          <div class="players-grid" id="starters-grid"></div>
         </div>
 
         <div id="subpanel-taxi" style="display:none">
@@ -1328,7 +1358,7 @@ body::before {
           <span style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted)">Season Progress</span>
           <span id="weekBadge" style="font-size:12px;font-weight:700;color:var(--orange);font-family:'Courier New',monospace;background:rgba(255,107,0,0.1);padding:2px 9px;border-radius:4px;border:1px solid rgba(255,107,0,0.3)">WEEK 1</span>
         </div>
-        <button onclick="advanceWeek()" style="width:100%;background:linear-gradient(135deg,#1a3a1a,#0f280f);border:1px solid #2d7a2d;color:#3db33d;padding:11px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:0.5px;transition:background 0.2s;" onmouseover="this.style.background='linear-gradient(135deg,#1e4a1e,#122e12)'" onmouseout="this.style.background='linear-gradient(135deg,#1a3a1a,#0f280f)'">⏭ ADVANCE TO NEXT WEEK</button>
+        <button onclick="advanceWeek()" style="width:100%;background:linear-gradient(135deg,#1a3a1a,#0f280f);border:1px solid var(--green-bright);color:var(--green-glow);padding:11px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:0.5px;transition:all 0.2s;" onmouseover="this.style.background='linear-gradient(135deg,#1e4a1e,#122e12)'" onmouseout="this.style.background='linear-gradient(135deg,#1a3a1a,#0f280f)'">⏭ ADVANCE TO NEXT WEEK</button>
       </div>
 
       <!-- INBOX PREVIEW -->
@@ -1471,7 +1501,7 @@ const PICKS_DB = [
 ];
 
 // Grade thresholds
-// Calibrated for real KTC SF values: D- roster ~82K, A+ roster ~210K+
+// Calibrated for real KTC SF values: D- roster ≈ 82K, A+ roster ≈ 200K+
 const GRADES = [
   {grade:'D-',min:0,      max:88000,  color:'#cc2222'},
   {grade:'D', min:88000,  max:100000, color:'#d03300'},
@@ -1494,7 +1524,7 @@ function getGradeInfo(totalValue) {
   return GRADES[GRADES.length - 1];
 }
 
-// Per-player grade: KTC SF TEP scale (max ~10K)
+// Per-player grade based on individual KTC value (SF TEP scale, max ~10K)
 function playerGradeInfo(value) {
   if (value >= 9500) return {grade:'A+',color:'#119900'};
   if (value >= 8500) return {grade:'A', color:'#22aa00'};
@@ -1553,55 +1583,120 @@ function buildGmRoster(gmId) {
 
 // ====================================================
 // D- ROSTER GENERATION
-// ====================================================
-function generateDMinusRoster() {
-  return {
-    starters: [
-      // QBs (bad)
-      {...PLAYERS.find(p=>p.id==='p20')}, // Sam Darnold
-      {...PLAYERS.find(p=>p.id==='p22')}, // Geno Smith
-      // RBs (aging/declining)
-      {...PLAYERS.find(p=>p.id==='p84')}, // Chuba Hubbard
-      {...PLAYERS.find(p=>p.id==='p87')}, // Rico Dowdle
-      {...PLAYERS.find(p=>p.id==='p88')}, // Blake Corum
-      {...PLAYERS.find(p=>p.id==='p89')}, // Jaylen Warren
-      // WRs (mix of injury risk + low targets)
-      {...PLAYERS.find(p=>p.id==='p53')}, // Jakobi Meyers
-      {...PLAYERS.find(p=>p.id==='p50')}, // Terry McLaurin
-      {...PLAYERS.find(p=>p.id==='p51')}, // Mike Evans
-      {...PLAYERS.find(p=>p.id==='p49')}, // DK Metcalf
-      {...PLAYERS.find(p=>p.id==='p52')}, // Davante Adams
-      {...PLAYERS.find(p=>p.id==='p56')}, // Tre Harris (rookie)
-      // TEs (no elite)
-      {...PLAYERS.find(p=>p.id==='p121')}, // TJ Hockenson
-      {...PLAYERS.find(p=>p.id==='p119')}, // Mark Andrews
-      // FLEX
-      {...PLAYERS.find(p=>p.id==='p81')}, // Zach Charbonnet
-      {...PLAYERS.find(p=>p.id==='p82')}, // D'Andre Swift
-      // Extra
-      {...PLAYERS.find(p=>p.id==='p94')}, // Josh Jacobs
-      {...PLAYERS.find(p=>p.id==='p95')}, // Saquon Barkley
-      {...PLAYERS.find(p=>p.id==='p120')}, // Okonkwo
-      {...PLAYERS.find(p=>p.id==='p124')}, // Mason Taylor
-    ].filter(Boolean),
-    ir: [
-      {...PLAYERS.find(p=>p.id==='p118'), injured:true, returnWeek:12}, // Dalton Kincaid
-    ].filter(Boolean),
-    taxi: [
-      // Rank 20-40 rookies only — never top-15 dynasty assets on D- taxi
-      {...PLAYERS.find(p=>p.id==='p92')}, // Cam Skattebo RB NYG (~1900)
-      {...PLAYERS.find(p=>p.id==='p93')}, // Bhayshul Tuten RB JAX (~2100)
-      {...PLAYERS.find(p=>p.id==='p57')}, // Kyle Williams WR NE (~2000)
-      {...PLAYERS.find(p=>p.id==='p54')}, // Jack Bech WR LV (~2700)
-    ].filter(Boolean),
-    picks: [
-      {...PICKS_DB.find(p=>p.id==='pick_2026_3'), id:'dp_2026_3a'},
-      {...PICKS_DB.find(p=>p.id==='pick_2026_3'), id:'dp_2026_3b', name:'2026 3rd (2)'},
-      {...PICKS_DB.find(p=>p.id==='pick_2026_4'), id:'dp_2026_4'},
-      {...PICKS_DB.find(p=>p.id==='pick_2027_3'), id:'dp_2027_3'},
-    ].filter(Boolean),
-  };
+// ==================================================
+function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function sampleN(arr,n){return shuffle(arr).slice(0,n);}
+
+const DRAFTABLE_POOL={
+  QB:[
+    {id:'dq1', name:'Geno Smith',          pos:'QB',team:'SEA',age:34,value:1800,rookie:false},
+    {id:'dq2', name:'Kirk Cousins',         pos:'QB',team:'ATL',age:36,value:2200,rookie:false},
+    {id:'dq3', name:'Sam Darnold',          pos:'QB',team:'MIN',age:27,value:1700,rookie:false},
+    {id:'dq4', name:'Gardner Minshew',      pos:'QB',team:'LV', age:31,value:1500,rookie:false},
+    {id:'dq5', name:'Jacoby Brissett',      pos:'QB',team:'FA', age:32,value:1500,rookie:false},
+    {id:'dq6', name:'Derek Carr',           pos:'QB',team:'NO', age:34,value:1700,rookie:false},
+    {id:'dq7', name:'Zach Wilson',          pos:'QB',team:'DEN',age:25,value:1600,rookie:false},
+    {id:'dq8', name:'Jimmy Garoppolo',      pos:'QB',team:'FA', age:33,value:1500,rookie:false},
+    {id:'dq9', name:'Tyrod Taylor',         pos:'QB',team:'FA', age:35,value:1500,rookie:false},
+    {id:'dq10',name:'Bailey Zappe',         pos:'QB',team:'NE', age:26,value:1500,rookie:false},
+  ],
+  RB:[
+    {id:'dr1', name:'Ty Chandler',          pos:'RB',team:'MIN',age:26,value:1600,rookie:false},
+    {id:'dr2', name:'Kendre Miller',        pos:'RB',team:'NO', age:24,value:2200,rookie:false},
+    {id:'dr3', name:'Roschon Johnson',      pos:'RB',team:'CHI',age:24,value:1700,rookie:false},
+    {id:'dr4', name:'Jaleel McLaughlin',    pos:'RB',team:'DEN',age:25,value:1900,rookie:false},
+    {id:'dr5', name:'Keaton Mitchell',      pos:'RB',team:'BAL',age:24,value:2500,rookie:false},
+    {id:'dr6', name:'Kimani Vidal',         pos:'RB',team:'LAC',age:24,value:2000,rookie:false},
+    {id:'dr7', name:'Tony Pollard',         pos:'RB',team:'TEN',age:27,value:2800,rookie:false},
+    {id:'dr8', name:'Dameon Pierce',        pos:'RB',team:'HOU',age:26,value:1600,rookie:false},
+    {id:'dr9', name:'Salvon Ahmed',         pos:'RB',team:'FA', age:27,value:1500,rookie:false},
+    {id:'dr10',name:'Hassan Haskins',       pos:'RB',team:'TEN',age:26,value:1500,rookie:false},
+    {id:'dr11',name:'Patrick Taylor',       pos:'RB',team:'GB', age:27,value:1500,rookie:false},
+    {id:'dr12',name:"D'Onta Foreman",       pos:'RB',team:'FA', age:28,value:1600,rookie:false},
+    {id:'dr13',name:'Jashaun Corbin',       pos:'RB',team:'NYG',age:25,value:1700,rookie:false},
+    {id:'dr14',name:'Chuba Hubbard',        pos:'RB',team:'CAR',age:26,value:2100,rookie:false},
+    {id:'dr15',name:'Elijah Mitchell',      pos:'RB',team:'SF', age:27,value:2700,rookie:false},
+  ],
+  WR:[
+    {id:'dw1', name:'Cedric Tillman',       pos:'WR',team:'CLE',age:25,value:2500,rookie:false},
+    {id:'dw2', name:'Mecole Hardman',       pos:'WR',team:'KC', age:26,value:1800,rookie:false},
+    {id:'dw3', name:'Dontayvion Wicks',     pos:'WR',team:'GB', age:24,value:2200,rookie:false},
+    {id:'dw4', name:'Jalen Tolbert',        pos:'WR',team:'DAL',age:25,value:1700,rookie:false},
+    {id:'dw5', name:'Parris Campbell',      pos:'WR',team:'NYG',age:29,value:1500,rookie:false},
+    {id:'dw6', name:'Tutu Atwell',          pos:'WR',team:'LAR',age:25,value:1500,rookie:false},
+    {id:'dw7', name:'Josh Reynolds',        pos:'WR',team:'DET',age:30,value:1500,rookie:false},
+    {id:'dw8', name:'Scotty Miller',        pos:'WR',team:'TB', age:28,value:1500,rookie:false},
+    {id:'dw9', name:'Kalif Raymond',        pos:'WR',team:'FA', age:30,value:1500,rookie:false},
+    {id:'dw10',name:'Russell Gage',         pos:'WR',team:'FA', age:29,value:1500,rookie:false},
+    {id:'dw11',name:'Marquez Callaway',     pos:'WR',team:'FA', age:28,value:1500,rookie:false},
+    {id:'dw12',name:'Jakobi Meyers',        pos:'WR',team:'LV', age:28,value:2300,rookie:false},
+    {id:'dw13',name:'Kendall Hinton',       pos:'WR',team:'DEN',age:27,value:1500,rookie:false},
+    {id:'dw14',name:'JuJu Smith-Schuster',  pos:'WR',team:'FA', age:28,value:1700,rookie:false},
+    {id:'dw15',name:'Van Jefferson',        pos:'WR',team:'ATL',age:29,value:1600,rookie:false},
+    {id:'dw16',name:'Romeo Doubs',          pos:'WR',team:'GB', age:25,value:2800,rookie:false},
+    {id:'dw17',name:'Tre Harris',           pos:'WR',team:'LAC',age:23,value:3000,rookie:false},
+  ],
+  TE:[
+    {id:'dte1',name:'Noah Fant',            pos:'TE',team:'SEA',age:27,value:2000,rookie:false},
+    {id:'dte2',name:'Greg Dulcich',         pos:'TE',team:'DEN',age:25,value:1800,rookie:false},
+    {id:'dte3',name:'Tanner Hudson',        pos:'TE',team:'BUF',age:30,value:1500,rookie:false},
+    {id:'dte4',name:'Ian Thomas',           pos:'TE',team:'CAR',age:29,value:1500,rookie:false},
+    {id:'dte5',name:'Pharaoh Brown',        pos:'TE',team:'FA', age:30,value:1500,rookie:false},
+    {id:'dte6',name:'Adam Trautman',        pos:'TE',team:'FA', age:28,value:1600,rookie:false},
+    {id:'dte7',name:'Michael Mayer',        pos:'TE',team:'LV', age:23,value:2500,rookie:false},
+    {id:'dte8',name:'Juwan Johnson',        pos:'TE',team:'NO', age:28,value:1600,rookie:false},
+  ],
+};
+
+const TAXI_POOL_D=[
+  {id:'dtx1',name:'Cam Skattebo',     pos:'RB',team:'NYG',age:23,value:2400,rookie:true},
+  {id:'dtx2',name:'Bhayshul Tuten',   pos:'RB',team:'JAX',age:23,value:2600,rookie:true},
+  {id:'dtx3',name:'Kyle Williams',    pos:'WR',team:'NE', age:23,value:2100,rookie:true},
+  {id:'dtx4',name:'Tre Harris',       pos:'WR',team:'LAC',age:23,value:2800,rookie:true},
+  {id:'dtx5',name:'Tyler Shough',     pos:'QB',team:'NO', age:25,value:2000,rookie:true},
+  {id:'dtx6',name:'Mason Taylor',     pos:'TE',team:'MIA',age:22,value:2200,rookie:true},
+  {id:'dtx7',name:'Jaylin Noel',      pos:'WR',team:'IND',age:22,value:2000,rookie:true},
+  {id:'dtx8',name:'Woody Marks',      pos:'RB',team:'PHI',age:24,value:2000,rookie:true},
+  {id:'dtx9',name:'Jayden Higgins',   pos:'WR',team:'HOU',age:22,value:2300,rookie:true},
+];
+
+const BAD_PICKS_POOL=[
+  {id:'bp1',name:'2026 3rd (1)',value:1600,year:2026,round:3,slot:'mid'},
+  {id:'bp2',name:'2026 3rd (2)',value:1600,year:2026,round:3,slot:'mid'},
+  {id:'bp3',name:'2026 4th (1)',value:900, year:2026,round:4,slot:'mid'},
+  {id:'bp4',name:'2026 4th (2)',value:900, year:2026,round:4,slot:'mid'},
+  {id:'bp5',name:'2027 3rd (1)',value:1800,year:2027,round:3,slot:'mid'},
+  {id:'bp6',name:'2027 3rd (2)',value:1800,year:2027,round:3,slot:'mid'},
+];
+
+function _buildRoster(){
+  const qbs=sampleN(DRAFTABLE_POOL.QB,2);
+  const rbs=sampleN(DRAFTABLE_POOL.RB,7);
+  const wrs=sampleN(DRAFTABLE_POOL.WR,8);
+  const tes=sampleN(DRAFTABLE_POOL.TE,4);
+  const pool=[...qbs,...rbs,...wrs,...tes];
+  const nonQBs=pool.filter(p=>p.pos!=='QB');
+  const irBase=nonQBs[Math.floor(Math.random()*nonQBs.length)];
+  const irPlayer={...irBase,id:'ir_'+irBase.id,injured:true,returnWeek:8+Math.floor(Math.random()*7)};
+  const starters=pool.filter(p=>p.id!==irBase.id).slice(0,20)
+    .map((p,i)=>({...p,id:'hr_'+i+'_'+p.id,rookie:false}));
+  const taxi=sampleN(TAXI_POOL_D,4).map((p,i)=>({...p,id:'tx_'+i+'_'+p.id,rookie:true}));
+  const picks=sampleN(BAD_PICKS_POOL,4).map((p,i)=>({...p,id:'pk_'+i+'_'+p.id}));
+  return{starters,ir:[irPlayer],taxi,picks};
 }
+
+function generateDMinusRoster(){
+  let best=null,bestDist=Infinity;
+  for(let attempt=0;attempt<30;attempt++){
+    const r=_buildRoster();
+    const total=calcRosterValue(r);
+    if(total>=42000&&total<=68000)return r;
+    const dist=Math.abs(total-55000);
+    if(dist<bestDist){bestDist=dist;best=r;}
+  }
+  return best;
+}
+
 </script>
 <script>
 // ====================================================
@@ -1695,64 +1790,138 @@ function evaluateTrade(offeredAssets, requestedAssets, gmPersonality) {
 }
 
 // Generate a proactive offer from an AI GM toward the human player
-function buildFairBundle(gPlayers,gPicks,targetV,prefer,tol){
-  tol=tol||0.13;const minV=targetV*(1-tol),maxV=targetV*(1+tol);
-  const picks=[...gPicks].sort((a,b)=>b.value-a.value);
-  const players=[...gPlayers].sort((a,b)=>b.value-a.value);
-  const pool=prefer==='picks'?[...picks,...players]:prefer==='players'?[...players,...picks]:[...players,...picks];
-  for(const a of pool){if(a.value>=minV&&a.value<=maxV)return[a];}
-  for(let i=0;i<pool.length;i++){for(let j=i+1;j<pool.length;j++){const v=pool[i].value+pool[j].value;if(v>=minV&&v<=maxV)return[pool[i],pool[j]];}}
-  let bundle=[],total=0;
-  for(const a of pool){if(total+a.value<=maxV){bundle.push(a);total+=a.value;}if(total>=minV)return bundle;}
-  return null;
-}
-function offerIsFair(give,get){
-  const gv=give.reduce((s,a)=>s+(a.value||0),0);
-  const rv=get.reduce((s,a)=>s+(a.value||0),0);
-  if(gv<500)return false;
-  const r=rv/gv;return r>=0.80&&r<=1.20;
-}
-function tryGenerateProactiveOffer(gm,gmRoster,humanRoster){
-  const hP=[...(humanRoster.starters||[])].sort((a,b)=>b.value-a.value);
-  const hPk=[...(humanRoster.picks||[])].sort((a,b)=>b.value-a.value);
-  const gP=[...(gmRoster.starters||[])].sort((a,b)=>b.value-a.value);
-  const gPk=[...(gmRoster.picks||[])].sort((a,b)=>b.value-a.value);
-  let offer=null;
-  switch(gm.personality){
-    case 'pick_seller':{
-      const targets=hP.filter(p=>p.value>=2500);if(!targets.length)break;
-      const target=targets[Math.floor(Math.random()*Math.min(3,targets.length))];
-      const bundle=buildFairBundle(gP,gPk,target.value,'picks',0.12);if(!bundle)break;
-      offer={from:gm.id,youGive:[target],youGet:bundle,msg:`Looking to add ${target.name} to my squad. Offering ${bundle.map(a=>a.name).join(' + ')} — fair KTC return.`};break;}
-    case 'win_now':{
-      const targets=hP.filter(p=>p.value>=3000);if(!targets.length)break;
-      const target=targets[0];
-      const bundle=buildFairBundle(gP,gPk,target.value,'mixed',0.12);if(!bundle)break;
-      offer={from:gm.id,youGive:[target],youGet:bundle,msg:`I need ${target.name} for my championship run. Sending ${bundle.map(a=>a.name).join(' + ')} your way.`};break;}
-    case 'firesale':{
-      const aging=gP.filter(p=>p.age>=30).sort((a,b)=>b.value-a.value);if(!aging.length)break;
-      const dump=aging[Math.floor(Math.random()*Math.min(2,aging.length))];
-      const want=buildFairBundle(hP,hPk,dump.value,'picks',0.15);if(!want)break;
-      offer={from:gm.id,youGive:want,youGet:[dump],msg:`Firesale — ${dump.name} (age ${dump.age}) needs a new home. I want ${want.map(a=>a.name).join(' + ')} back.`};break;}
-    case 'aggressive':{
-      if(!hP.length)break;
-      const target=hP[Math.floor(Math.random()*Math.min(5,hP.length))];
-      const bundle=buildFairBundle(gP,gPk,target.value,'mixed',0.13);if(!bundle)break;
-      offer={from:gm.id,youGive:[target],youGet:bundle,msg:`What's it take for ${target.name}? Putting ${bundle.map(a=>a.name).join(' + ')} on the table.`};break;}
-    case 'rebuilder':{
-      const aging=hP.filter(p=>p.age>=29);if(!aging.length)break;
-      const target=aging[Math.floor(Math.random()*Math.min(2,aging.length))];
-      const bundle=buildFairBundle(gP,gPk,target.value,'picks',0.12);if(!bundle)break;
-      offer={from:gm.id,youGive:[target],youGet:bundle,msg:`${target.name} fits my timeline. Offering ${bundle.map(a=>a.name).join(' + ')} — future capital for your rebuild.`};break;}
-    case 'negotiator':{
-      if(!hP.length)break;
-      const target=hP[Math.floor(Math.random()*Math.min(4,hP.length))];
-      const bundle=buildFairBundle(gP,gPk,target.value,'mixed',0.10);if(!bundle)break;
-      offer={from:gm.id,youGive:[target],youGet:bundle,msg:`Opening on ${target.name}: ${bundle.map(a=>a.name).join(' + ')}. Counter me.`};break;}
-    default:break;
+// Build a bundle of GM assets worth targetValue ± tolerance (default ±13%)
+// preferType: 'picks' | 'players' | 'mixed'
+function buildFairBundle(gmPlayers, gmPicks, targetValue, preferType, tol) {
+  tol = tol || 0.13;
+  const minV = targetValue * (1 - tol);
+  const maxV = targetValue * (1 + tol);
+
+  const picks   = [...gmPicks].sort((a,b)=>b.value-a.value);
+  const players = [...gmPlayers].sort((a,b)=>b.value-a.value);
+  const pool = preferType === 'picks'   ? [...picks, ...players]
+             : preferType === 'players' ? [...players, ...picks]
+             : [...players, ...picks];
+
+  // Single asset within range
+  for (const a of pool) {
+    if (a.value >= minV && a.value <= maxV) return [a];
   }
-  if(!offer)return null;
-  if(!offerIsFair(offer.youGive,offer.youGet))return null;
+  // Two-asset combos
+  for (let i = 0; i < pool.length; i++) {
+    for (let j = i+1; j < pool.length; j++) {
+      const v = pool[i].value + pool[j].value;
+      if (v >= minV && v <= maxV) return [pool[i], pool[j]];
+    }
+  }
+  // Greedy accumulation — add assets while under maxV, stop when >= minV
+  let bundle = [], total = 0;
+  for (const a of pool) {
+    if (total + a.value <= maxV) { bundle.push(a); total += a.value; }
+    if (total >= minV) return bundle;
+  }
+  return null; // Can't build fair bundle
+}
+
+// Hard guard: reject offers where you get more than 1.2x what you give
+function offerIsFair(youGive, youGet) {
+  const give = youGive.reduce((s,a)=>s+(a.value||0),0);
+  const get  = youGet.reduce((s,a)=>s+(a.value||0),0);
+  if (give < 100) return false;
+  const ratio = get / give;
+  return ratio >= 0.80 && ratio <= 1.20;
+}
+
+function tryGenerateProactiveOffer(gm, gmRoster, humanRoster) {
+  const humanPlayers = [...(humanRoster.starters||[])].sort((a,b)=>b.value-a.value);
+  const humanPicks   = [...(humanRoster.picks||[])].sort((a,b)=>b.value-a.value);
+  const gmPlayers    = [...(gmRoster.starters||[])].sort((a,b)=>b.value-a.value);
+  const gmPicks      = [...(gmRoster.picks||[])].sort((a,b)=>b.value-a.value);
+
+  let offer = null;
+
+  switch(gm.personality) {
+
+    case 'pick_seller': {
+      // Wants a proven player, pays back in picks at fair value
+      const targets = humanPlayers.filter(p=>p.value>=2500);
+      if (!targets.length) break;
+      const target = targets[Math.floor(Math.random()*Math.min(3,targets.length))];
+      const bundle = buildFairBundle(gmPlayers, gmPicks, target.value, 'picks', 0.12);
+      if (!bundle) break;
+      offer = {from:gm.id, youGive:[target], youGet:bundle,
+        msg:`Looking to add ${target.name} to my squad. Offering ${bundle.map(a=>a.name).join(' + ')} — fair KTC return.`};
+      break;
+    }
+
+    case 'win_now': {
+      // Wants a high-value player, pays back equal value in players + picks
+      const targets = humanPlayers.filter(p=>p.value>=3000);
+      if (!targets.length) break;
+      const target = targets[0];
+      const bundle = buildFairBundle(gmPlayers, gmPicks, target.value, 'mixed', 0.12);
+      if (!bundle) break;
+      offer = {from:gm.id, youGive:[target], youGet:bundle,
+        msg:`I need ${target.name} for my championship run. Sending ${bundle.map(a=>a.name).join(' + ')} your way.`};
+      break;
+    }
+
+    case 'firesale': {
+      // Wants to dump an aging player — offers them, asks for fair value back
+      const aging = gmPlayers.filter(p=>p.age>=30).sort((a,b)=>b.value-a.value);
+      if (!aging.length) break;
+      const dump = aging[Math.floor(Math.random()*Math.min(2,aging.length))];
+      // What can the human give back that's fair for dump.value?
+      const humanPool = [...humanPlayers, ...humanPicks].sort((a,b)=>b.value-a.value);
+      const want = buildFairBundle(humanPlayers, humanPicks, dump.value, 'picks', 0.15);
+      if (!want) break;
+      // Offer: human gives want, human gets dump
+      offer = {from:gm.id, youGive:want, youGet:[dump],
+        msg:`Firesale — ${dump.name} (age ${dump.age}) needs a new home. I want ${want.map(a=>a.name).join(' + ')} back. Works?`};
+      break;
+    }
+
+    case 'aggressive': {
+      // Wants any human player, offers fair value back
+      if (!humanPlayers.length) break;
+      const idx = Math.floor(Math.random()*Math.min(5,humanPlayers.length));
+      const target = humanPlayers[idx];
+      const bundle = buildFairBundle(gmPlayers, gmPicks, target.value, 'mixed', 0.13);
+      if (!bundle) break;
+      offer = {from:gm.id, youGive:[target], youGet:bundle,
+        msg:`What's it take for ${target.name}? Putting ${bundle.map(a=>a.name).join(' + ')} on the table. Let's move.`};
+      break;
+    }
+
+    case 'rebuilder': {
+      // Wants aging veterans, pays in picks at fair value
+      const aging = humanPlayers.filter(p=>p.age>=29);
+      if (!aging.length) break;
+      const target = aging[Math.floor(Math.random()*Math.min(2,aging.length))];
+      const bundle = buildFairBundle(gmPlayers, gmPicks, target.value, 'picks', 0.12);
+      if (!bundle) break;
+      offer = {from:gm.id, youGive:[target], youGet:bundle,
+        msg:`${target.name} fits my timeline. Offering ${bundle.map(a=>a.name).join(' + ')} — future capital for your rebuild.`};
+      break;
+    }
+
+    case 'negotiator': {
+      // Generic fair-value offer on a random human player
+      if (!humanPlayers.length) break;
+      const target = humanPlayers[Math.floor(Math.random()*Math.min(4,humanPlayers.length))];
+      const bundle = buildFairBundle(gmPlayers, gmPicks, target.value, 'mixed', 0.10);
+      if (!bundle) break;
+      offer = {from:gm.id, youGive:[target], youGet:bundle,
+        msg:`Starting a conversation on ${target.name}. Here's my opening: ${bundle.map(a=>a.name).join(' + ')}. Counter me.`};
+      break;
+    }
+
+    default: break;
+  }
+
+  // Hard fairness gate — never let any offer slip through at crazy value
+  if (!offer) return null;
+  if (!offerIsFair(offer.youGive, offer.youGet)) return null;
   return offer;
 }
 </script>
@@ -1796,7 +1965,7 @@ function saveGame() {
       savedAt: Date.now(),
     };
     localStorage.setItem(SAVE_KEY, JSON.stringify(snap));
-  } catch(e) {}
+  } catch(e) { /* quota exceeded or private mode */ }
 }
 
 function loadSave() {
@@ -1910,6 +2079,7 @@ function _initNewGame(name) {
 
   STATE.initialized = true;
   document.getElementById('headerTeamName').value = STATE.teamName;
+
   saveGame();
   hideEntryScreen();
   renderAll();
@@ -2025,7 +2195,12 @@ function espnHeadshotUrl(espnId) {
   return `https://a.espncdn.com/i/headshots/nfl/players/full/${espnId}.png`;
 }
 
-function getInitials(n){const p=n.replace(/[\u2018\u2019']/g,'').split(' ').filter(Boolean);return p.length>=2?(p[0][0]+p[p.length-1][0]).toUpperCase():(p[0]||'?')[0].toUpperCase();}
+function getInitials(name) {
+  const parts = name.replace(/[''']/g,'').split(' ').filter(Boolean);
+  if (parts.length >= 2) return (parts[0][0] + parts[parts.length-1][0]).toUpperCase();
+  return (parts[0] || '?')[0].toUpperCase();
+}
+
 function renderPlayerCard(asset, clickable, isSelected, context) {
   const isPick = (asset.id && asset.id.startsWith('pick')) || asset.year;
   if (isPick) return renderPickCard(asset, clickable, isSelected, context);
@@ -2034,11 +2209,12 @@ function renderPlayerCard(asset, clickable, isSelected, context) {
   const sel = isSelected ? 'selected' : '';
   const inj = asset.injured ? 'injured' : '';
   const onClick = clickable ? `onclick="toggleAssetSelect('${asset.id}','${context}')"` : '';
+  const initials = getInitials(asset.name);
 
   return `<div class="player-card ${sel} ${inj}" ${onClick} data-id="${asset.id}">
     ${asset.injured ? '<div class="injury-badge">IR</div>' : (asset.rookie ? '<div class="rookie-badge">ROOKIE</div>' : '')}
     <div class="player-card-top">
-      <div class="player-avatar avatar-${asset.pos}">${getInitials(asset.name)}</div>
+      <div class="player-avatar avatar-${asset.pos}">${initials}</div>
       <div class="player-info">
         <div class="player-name">${asset.name}</div>
         <div class="player-meta">${asset.team || ''} · Age ${asset.age || '?'}</div>
@@ -2064,38 +2240,43 @@ function renderPickCard(pick, clickable, isSelected, context) {
   </div>`;
 }
 
-const POS_ORDER=['QB','RB','WR','TE'];
-const POS_META={QB:{label:'QUARTERBACKS',color:'var(--pos-qb)'},RB:{label:'RUNNING BACKS',color:'var(--pos-rb)'},WR:{label:'WIDE RECEIVERS',color:'var(--pos-wr)'},TE:{label:'TIGHT ENDS',color:'var(--pos-te)'}};
+const POS_ORDER = ['QB','RB','WR','TE'];
+const POS_META = {
+  QB: { label:'QUARTERBACKS', color:'var(--pos-qb)' },
+  RB: { label:'RUNNING BACKS', color:'var(--pos-rb)' },
+  WR: { label:'WIDE RECEIVERS', color:'var(--pos-wr)' },
+  TE: { label:'TIGHT ENDS',    color:'var(--pos-te)' },
+};
 
-function renderGroupedCards(items,context){
-  if(!items.length)return'';
-  const byPos={};POS_ORDER.forEach(p=>byPos[p]=[]);
-  items.forEach(p=>{if(byPos[p.pos])byPos[p.pos].push(p);});
-  let html='';
-  POS_ORDER.forEach(pos=>{
-    const group=byPos[pos];if(!group.length)return;
-    const m=POS_META[pos];
-    const bg=m.color.replace('var(--pos-qb)','rgba(139,92,246,0.12)').replace('var(--pos-rb)','rgba(34,197,94,0.1)').replace('var(--pos-wr)','rgba(59,130,246,0.1)').replace('var(--pos-te)','rgba(249,115,22,0.1)');
-    html+=`<div class="pos-divider"><span class="pos-divider-label" style="color:${m.color};background:${bg};">${m.label}</span><div class="pos-divider-line" style="background:${m.color}"></div></div>`;
-    html+=group.map(p=>renderPlayerCard(p,true,STATE.selectedForTrade.includes(p.id),context)).join('');
+function renderGroupedCards(items, context) {
+  if (!items.length) return '';
+  // Group by position in order
+  const byPos = {};
+  POS_ORDER.forEach(p => byPos[p] = []);
+  items.forEach(p => { if (byPos[p.pos]) byPos[p.pos].push(p); });
+
+  let html = '';
+  POS_ORDER.forEach(pos => {
+    const group = byPos[pos];
+    if (!group.length) return;
+    const meta = POS_META[pos];
+    html += `<div class="pos-divider">
+      <span class="pos-divider-label" style="color:${meta.color};background:${meta.color.replace('var(--pos-','rgba(').replace(')',',0.1)')};">${meta.label}</span>
+      <div class="pos-divider-line" style="background:${meta.color}"></div>
+    </div>`;
+    html += group.map(p => renderPlayerCard(p, true, STATE.selectedForTrade.includes(p.id), context)).join('');
   });
   return html;
 }
 
 function renderRosterZones() {
   const starters = STATE.humanRoster?.starters || [];
-  const sorted = [...starters].sort((a,b)=>(b.value||0)-(a.value||0));
-  const zones = {redzone:[], midfield:[], own20:[]};
-  sorted.forEach(p => zones[getZone(p.value)].push(p));
-  ['redzone','midfield','own20'].forEach(zone => {
-    const grid = document.getElementById(`${zone}-grid`);
-    const count = document.getElementById(`${zone}-count`);
-    const items = zones[zone];
-    count.textContent = `${items.length} asset${items.length!==1?'s':''}`;
-    grid.innerHTML = items.length ? renderGroupedCards(items,'roster') : '<p style="color:var(--muted);font-size:13px;padding:8px 0">No assets in this zone.</p>';
-  });
+  const grid = document.getElementById('starters-grid');
+  if (!grid) return;
+  grid.innerHTML = starters.length
+    ? renderGroupedCards(starters, 'roster')
+    : '<p style="color:var(--muted);font-size:13px;padding:8px 0">No starters on your roster.</p>';
 }
-
 function renderTaxiIR() {
   const taxiGrid = document.getElementById('taxi-grid');
   const irGrid = document.getElementById('ir-grid');
@@ -2145,28 +2326,40 @@ function renderPartnerRoster(gmId) {
 // ====================================================
 function updateInboxBadge() {
   const unread = STATE.inbox.filter(o=>!o.read).length;
-  const el = document.getElementById('inboxCount');
-  if(el) el.textContent = unread || STATE.inbox.length;
+  document.getElementById('inboxCount').textContent = unread || STATE.inbox.length;
   const dot = document.getElementById('inboxDot');
-  if(dot) dot.style.display = unread > 0 ? 'inline-block' : 'none';
+  if (dot) dot.style.display = unread > 0 ? 'inline-block' : 'none';
 }
 
 function advanceWeek() {
   STATE.week++;
   const wb = document.getElementById('weekBadge');
-  if(wb) wb.textContent = 'WEEK '+STATE.week;
-  STATE.inbox.forEach(o=>o.read=true);
-  let newOffers=0;
-  const shuffled=[...AI_GMS].sort(()=>Math.random()-0.5);
-  for(const gm of shuffled){
-    if(newOffers>=3)break;
-    if(Math.random()>gm.tradeFreq)continue;
-    const offer=tryGenerateProactiveOffer(gm,STATE.gmRosters[gm.id],STATE.humanRoster);
-    if(offer){offer.id=nextOfferId();offer.timestamp=Date.now();offer.read=false;STATE.inbox.unshift(offer);newOffers++;}
+  if (wb) wb.textContent = `WEEK ${STATE.week}`;
+
+  // Mark all current offers read (dismiss them)
+  STATE.inbox.forEach(o => o.read = true);
+
+  // Generate 2-3 fresh offers from random GMs
+  let newOffers = 0;
+  const shuffled = [...AI_GMS].sort(()=>Math.random()-0.5);
+  for (const gm of shuffled) {
+    if (newOffers >= 3) break;
+    if (Math.random() > gm.tradeFreq) continue;
+    const offer = tryGenerateProactiveOffer(gm, STATE.gmRosters[gm.id], STATE.humanRoster);
+    if (offer) {
+      offer.id = nextOfferId();
+      offer.timestamp = Date.now();
+      offer.read = false;
+      STATE.inbox.unshift(offer);
+      newOffers++;
+    }
   }
-  showToast('⏭ Week '+STATE.week+' — New offers incoming',newOffers+' AI GM'+(newOffers!==1?'s':'')+' sent you trade proposals.','info');
+
+  showToast(`⏭ Week ${STATE.week} — New offers incoming`, `${newOffers} AI GM${newOffers!==1?'s':''} sent you trade proposals.`, 'info');
   saveGame();
-  renderInboxPreview();renderInboxFull();updateInboxBadge();
+  renderInboxPreview();
+  renderInboxFull();
+  updateInboxBadge();
 }
 
 function renderOfferCard(offer, isPreview) {
