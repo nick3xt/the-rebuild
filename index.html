@@ -1762,6 +1762,7 @@ function generateDMinusRoster(){
     const dist=Math.abs(total-55000);
     if(dist<bestDist){bestDist=dist;best=r;}
   }
+  if(!best) throw new Error('Roster generation failed after 30 attempts — no valid roster found');
   return best;
 }
 
@@ -2099,8 +2100,24 @@ function confirmStartFresh() {
 }
 
 function startNewGame() {
-  const name = (document.getElementById('teamNameInput').value || '').trim() || 'My Rebuild';
-  _initNewGame(name);
+  const btn = document.querySelector('[onclick="startNewGame()"]');
+  if (btn) { btn.textContent = 'BUILDING YOUR ROSTER...'; btn.disabled = true; }
+  try {
+    const name = (document.getElementById('teamNameInput').value || '').trim() || 'My Rebuild';
+    _initNewGame(name);
+  } catch (err) {
+    console.error('startNewGame error:', err);
+    let errDiv = document.getElementById('_startGameError');
+    if (!errDiv) {
+      errDiv = document.createElement('div');
+      errDiv.id = '_startGameError';
+      errDiv.style.cssText = 'color:#ff4444;padding:12px;margin-top:10px;font-weight:bold;text-align:center;background:rgba(255,0,0,0.1);border-radius:8px;';
+      const panel = document.getElementById('entryNewPanel');
+      if (panel) panel.appendChild(errDiv);
+    }
+    errDiv.textContent = '❌ Failed to generate roster: ' + (err.message || String(err));
+    if (btn) { btn.textContent = 'Start Your Rebuild →'; btn.disabled = false; }
+  }
 }
 
 function continueGame() {
