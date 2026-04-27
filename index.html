@@ -1640,18 +1640,19 @@ const PICKS_DB = [
 // Grade thresholds
 // Calibrated for real KTC SF values: D- roster ≈ 82K, A+ roster ≈ 200K+
 const GRADES = [
-  {grade:'D-',min:0,      max:88000,  color:'#cc2222'},
-  {grade:'D', min:88000,  max:97000,  color:'#d03300'},
-  {grade:'D+',min:97000,  max:107000, color:'#cc5500'},
-  {grade:'C-',min:107000, max:116000, color:'#cc7700'},
-  {grade:'C', min:116000, max:125000, color:'#cc9900'},
-  {grade:'C+',min:125000, max:133000, color:'#ccbb00'},
-  {grade:'B-',min:133000, max:139000, color:'#aacc00'},
-  {grade:'B', min:139000, max:144000, color:'#77cc00'},
-  {grade:'B+',min:144000, max:148000, color:'#55cc00'},
-  {grade:'A-',min:148000, max:152000, color:'#33bb00'},
-  {grade:'A', min:152000, max:157000, color:'#22aa00'},
-  {grade:'A+',min:157000, max:999999, color:'#119900'},
+  {grade:'F',   min:0,     max:25000,  color:'#990000'},
+    {grade:'D-',min:25000,      max:38000,  color:'#cc2222'},
+  {grade:'D', min:38000,  max:48000,  color:'#d03300'},
+  {grade:'D+',min:48000,  max:58000, color:'#cc5500'},
+  {grade:'C-',min:58000, max:68000, color:'#cc7700'},
+  {grade:'C', min:68000, max:78000, color:'#cc9900'},
+  {grade:'C+',min:78000, max:88000, color:'#ccbb00'},
+  {grade:'B-',min:88000, max:98000, color:'#aacc00'},
+  {grade:'B', min:98000, max:108000, color:'#77cc00'},
+  {grade:'B+',min:108000, max:118000, color:'#55cc00'},
+  {grade:'A-',min:118000, max:130000, color:'#33bb00'},
+  {grade:'A', min:130000, max:145000, color:'#22aa00'},
+  {grade:'A+',min:145000, max:999999, color:'#119900'},
 ];
 
 function getGradeInfo(totalValue) {
