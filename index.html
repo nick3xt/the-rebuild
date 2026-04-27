@@ -1356,9 +1356,9 @@ body::before {
       <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
           <span style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted)">Season Progress</span>
-          <span id="weekBadge" style="font-size:12px;font-weight:700;color:var(--orange);font-family:'Courier New',monospace;background:rgba(255,107,0,0.1);padding:2px 9px;border-radius:4px;border:1px solid rgba(255,107,0,0.3)">WEEK 1</span>
+          <span id="weekBadge" style="font-size:12px;font-weight:700;color:var(--orange);font-family:'Courier New',monospace;background:rgba(255,107,0,0.1);padding:2px 9px;border-radius:4px;border:1px solid rgba(255,107,0,0.3)">OFF SEASON</span>
         </div>
-        <button onclick="advanceWeek()" style="width:100%;background:linear-gradient(135deg,#1a3a1a,#0f280f);border:1px solid var(--green-bright);color:var(--green-glow);padding:11px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:0.5px;transition:all 0.2s;" onmouseover="this.style.background='linear-gradient(135deg,#1e4a1e,#122e12)'" onmouseout="this.style.background='linear-gradient(135deg,#1a3a1a,#0f280f)'">⏭ ADVANCE TO NEXT WEEK</button>
+        <button id="advanceBtn" onclick="advanceSeason()" style="width:100%;background:linear-gradient(135deg,#1a3a1a,#0f280f);border:1px solid var(--green-bright);color:var(--green-glow);padding:11px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:0.5px;transition:all 0.2s;" onmouseover="this.style.background='linear-gradient(135deg,#1e4a1e,#122e12)'" onmouseout="this.style.background='linear-gradient(135deg,#1a3a1a,#0f280f)'" >⏭ BEGIN PRESEASON</button>
       </div>
 
       <!-- INBOX PREVIEW -->
@@ -1980,7 +1980,10 @@ function tryGenerateProactiveOffer(gm, gmRoster, humanRoster) {
 let STATE = {
   initialized: false,
   teamName: 'My Team',
-  week: 1,
+  week: 0,
+  phase: 'OFF_SEASON',   // OFF_SEASON | PRESEASON | REGULAR | PLAYOFFS
+  byeWeek: 8,            // randomly assigned week 4-13
+  playoffRound: 0,       // 0=not started, 1-3=rounds, 4=champion, -1=eliminated
   record: {w:0, l:0},
   humanRoster: null,
   gmRosters: {},
@@ -2005,6 +2008,9 @@ function saveGame() {
     const snap = {
       teamName: STATE.teamName,
       week: STATE.week,
+      phase: STATE.phase,
+      byeWeek: STATE.byeWeek,
+      playoffRound: STATE.playoffRound,
       record: STATE.record,
       humanRoster: STATE.humanRoster,
       gmRosters: STATE.gmRosters,
@@ -2040,7 +2046,7 @@ function showEntryScreen() {
     document.getElementById('entrySavePanel').style.display = 'flex';
     const d = new Date(save.savedAt).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
     document.getElementById('entrySaveInfo').textContent =
-      `${save.teamName} · Week ${save.week || 1} · Saved ${d}`;
+      `${save.teamName} · ${save.phase === 'OFF_SEASON' ? 'Off Season' : save.phase === 'PRESEASON' ? 'Preseason' : save.phase === 'PLAYOFFS' ? 'Playoffs' : `Week ${save.week}`} · Saved ${d}`;
   } else {
     document.getElementById('entryNewPanel').style.display = 'flex';
     document.getElementById('entrySavePanel').style.display = 'none';
@@ -2081,7 +2087,10 @@ function continueGame() {
   if (!save || !save.humanRoster) { showEntryScreen(); return; }
 
   STATE.teamName = save.teamName;
-  STATE.week = save.week || 1;
+  STATE.week = save.week ?? 0;
+  STATE.phase = save.phase || 'OFF_SEASON';
+  STATE.byeWeek = save.byeWeek || 8;
+  STATE.playoffRound = save.playoffRound ?? 0;
   STATE.record = save.record || {w:0, l:0};
   STATE.humanRoster = save.humanRoster;
   STATE.gmRosters = save.gmRosters || {};
@@ -2091,8 +2100,7 @@ function continueGame() {
 
   _populateTradeSelect();
   document.getElementById('headerTeamName').value = STATE.teamName;
-  const wb = document.getElementById('weekBadge');
-  if (wb) wb.textContent = `WEEK ${STATE.week}`;
+  updateSeasonDisplay();
 
   hideEntryScreen();
   renderAll();
@@ -2102,7 +2110,10 @@ function continueGame() {
 
 function _initNewGame(name) {
   STATE.teamName = name;
-  STATE.week = 1;
+  STATE.week = 0;
+  STATE.phase = 'OFF_SEASON';
+  STATE.byeWeek = 4 + Math.floor(Math.random() * 10); // random week 4-13
+  STATE.playoffRound = 0;
   STATE.record = {w:0, l:0};
   STATE.humanRoster = generateDMinusRoster();
   STATE.inbox = [];
@@ -2111,19 +2122,8 @@ function _initNewGame(name) {
   AI_GMS.forEach(gm => { STATE.gmRosters[gm.id] = buildGmRoster(gm.id); });
   _populateTradeSelect();
 
-  let count = 0;
-  for (const gm of AI_GMS) {
-    if (count >= 3) break;
-    if (Math.random() > gm.tradeFreq) continue;
-    const offer = tryGenerateProactiveOffer(gm, STATE.gmRosters[gm.id], STATE.humanRoster);
-    if (offer) {
-      offer.id = nextOfferId();
-      offer.timestamp = Date.now();
-      offer.read = false;
-      STATE.inbox.push(offer);
-      count++;
-    }
-  }
+  // Off-season: 1-2 early GM interest offers
+  _generateWeeklyOffers(2);
 
   STATE.initialized = true;
   document.getElementById('headerTeamName').value = STATE.teamName;
@@ -2131,6 +2131,7 @@ function _initNewGame(name) {
   saveGame();
   hideEntryScreen();
   renderAll();
+  updateSeasonDisplay();
   scheduleAIOffers();
 }
 
@@ -2379,19 +2380,11 @@ function updateInboxBadge() {
   if (dot) dot.style.display = unread > 0 ? 'inline-block' : 'none';
 }
 
-function advanceWeek() {
-  STATE.week++;
-  const wb = document.getElementById('weekBadge');
-  if (wb) wb.textContent = `WEEK ${STATE.week}`;
-
-  // Mark all current offers read (dismiss them)
-  STATE.inbox.forEach(o => o.read = true);
-
-  // Generate 2-3 fresh offers from random GMs
-  let newOffers = 0;
-  const shuffled = [...AI_GMS].sort(()=>Math.random()-0.5);
+function _generateWeeklyOffers(maxCount) {
+  let generated = 0;
+  const shuffled = [...AI_GMS].sort(() => Math.random() - 0.5);
   for (const gm of shuffled) {
-    if (newOffers >= 3) break;
+    if (generated >= maxCount) break;
     if (Math.random() > gm.tradeFreq) continue;
     const offer = tryGenerateProactiveOffer(gm, STATE.gmRosters[gm.id], STATE.humanRoster);
     if (offer) {
@@ -2399,16 +2392,125 @@ function advanceWeek() {
       offer.timestamp = Date.now();
       offer.read = false;
       STATE.inbox.unshift(offer);
-      newOffers++;
+      generated++;
     }
   }
+  return generated;
+}
 
-  showToast(`⏭ Week ${STATE.week} — New offers incoming`, `${newOffers} AI GM${newOffers!==1?'s':''} sent you trade proposals.`, 'info');
+function updateSeasonDisplay() {
+  const wb  = document.getElementById('weekBadge');
+  const btn = document.getElementById('advanceBtn');
+  let label = '', btnText = '';
+
+  if (STATE.phase === 'OFF_SEASON') {
+    label   = 'OFF SEASON';
+    btnText = '⏭ BEGIN PRESEASON';
+  } else if (STATE.phase === 'PRESEASON') {
+    label   = 'PRESEASON';
+    btnText = '⏭ START REGULAR SEASON';
+  } else if (STATE.phase === 'REGULAR') {
+    const isBye = STATE.week === STATE.byeWeek;
+    label   = isBye ? `BYE WEEK ${STATE.week}` : `WEEK ${STATE.week}`;
+    btnText = STATE.week >= 18
+      ? '⏭ ENTER PLAYOFFS'
+      : `⏭ ADVANCE TO WEEK ${STATE.week + 1}`;
+  } else if (STATE.phase === 'PLAYOFFS') {
+    if (STATE.playoffRound === 1)       { label = 'PLAYOFFS — ROUND 1';       btnText = '⏭ SIMULATE ROUND 1'; }
+    else if (STATE.playoffRound === 2)  { label = 'PLAYOFFS — SEMI-FINAL';    btnText = '⏭ SIMULATE SEMI-FINAL'; }
+    else if (STATE.playoffRound === 3)  { label = 'PLAYOFFS — CHAMPIONSHIP';  btnText = '⏭ SIMULATE CHAMPIONSHIP'; }
+    else if (STATE.playoffRound === 4)  { label = '🏆 CHAMPION';              btnText = '🔄 START NEW REBUILD'; }
+    else if (STATE.playoffRound === -1) { label = '❌ ELIMINATED';            btnText = '🔄 START NEW REBUILD'; }
+  }
+
+  if (wb)  wb.textContent  = label;
+  if (btn) btn.textContent = btnText;
+}
+
+function _simulatePlayoffRound() {
+  const GRADE_ORDER = ['D-','D','D+','C-','C','C+','B-','B','B+','A-','A','A+'];
+  const total = calcRosterValue(STATE.humanRoster);
+  const grade = getGradeInfo(total).grade;
+  const gi = GRADE_ORDER.indexOf(grade);
+
+  if (STATE.playoffRound === 1) {
+    if (gi <= GRADE_ORDER.indexOf('C+')) {
+      STATE.playoffRound = -1;
+      showToast('❌ ROUND 1 EXIT', `${grade} isn't enough. The rebuild continues... or doesn't.`, 'info');
+    } else {
+      STATE.playoffRound = 2;
+      _generateWeeklyOffers(2);
+      showToast('✅ ROUND 1 WIN', 'Semi-finals await. Don't blow it.', 'success');
+    }
+  } else if (STATE.playoffRound === 2) {
+    if (gi <= GRADE_ORDER.indexOf('B+')) {
+      STATE.playoffRound = -1;
+      showToast('❌ SEMI-FINAL EXIT', `Grade ${grade}. Close, but not close enough.`, 'info');
+    } else {
+      STATE.playoffRound = 3;
+      _generateWeeklyOffers(2);
+      showToast('✅ SEMI-FINAL WIN', 'Championship game. Everything on the line.', 'success');
+    }
+  } else if (STATE.playoffRound === 3) {
+    if (gi >= GRADE_ORDER.indexOf('A-')) {
+      STATE.playoffRound = 4;
+      showToast('🏆 CHAMPION', 'You rebuilt the dynasty. They doubted you.', 'success');
+    } else {
+      STATE.playoffRound = -1;
+      showToast('❌ CHAMPIONSHIP LOSS', `Grade ${grade} falls one round short. So close.`, 'info');
+    }
+  } else if (STATE.playoffRound === 4 || STATE.playoffRound === -1) {
+    showEntryScreen();
+    return;
+  }
+}
+
+function advanceSeason() {
+  if (STATE.phase === 'OFF_SEASON') {
+    STATE.phase = 'PRESEASON';
+    STATE.inbox.forEach(o => o.read = true);
+    const n = _generateWeeklyOffers(2);
+    showToast('🏈 PRESEASON', `AI GMs are making their moves. ${n} offer${n!==1?'s':''} incoming.`, 'info');
+
+  } else if (STATE.phase === 'PRESEASON') {
+    STATE.phase = 'REGULAR';
+    STATE.week = 1;
+    STATE.inbox.forEach(o => o.read = true);
+    const n = _generateWeeklyOffers(3);
+    showToast('🏈 WEEK 1 — REGULAR SEASON', `The season is live. ${n} new trade proposal${n!==1?'s':''}.`, 'info');
+
+  } else if (STATE.phase === 'REGULAR') {
+    if (STATE.week >= 18) {
+      STATE.phase = 'PLAYOFFS';
+      STATE.playoffRound = 1;
+      STATE.inbox.forEach(o => o.read = true);
+      _generateWeeklyOffers(2);
+      showToast('🏆 PLAYOFFS BEGIN', 'Your rebuild is being tested. Make it count.', 'info');
+    } else {
+      STATE.week++;
+      STATE.inbox.forEach(o => o.read = true);
+      const isBye = STATE.week === STATE.byeWeek;
+      const n = _generateWeeklyOffers(isBye ? 1 : 3);
+      if (isBye) {
+        showToast(`😴 BYE WEEK ${STATE.week}`, 'Enjoy the bye. Your roster still looks terrible.', 'info');
+      } else {
+        showToast(`⏭ WEEK ${STATE.week}`, `${n} new trade proposal${n!==1?'s':''}.`, 'info');
+      }
+    }
+
+  } else if (STATE.phase === 'PLAYOFFS') {
+    _simulatePlayoffRound();
+  }
+
+  updateSeasonDisplay();
   saveGame();
   renderInboxPreview();
   renderInboxFull();
   updateInboxBadge();
 }
+
+// legacy alias kept for safety
+function advanceWeek() { advanceSeason(); }
 
 function renderOfferCard(offer, isPreview) {
   const gm = AI_GMS.find(g=>g.id===offer.from);
