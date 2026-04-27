@@ -1318,6 +1318,7 @@ body::before {
 
       <!-- TRADE BUILDER TAB -->
       <div class="tab-panel" id="panel-trade">
+        <div id="counterBanner" style="display:none;background:linear-gradient(135deg,#1e293b,#0f172a);border-left:3px solid var(--orange);padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;color:var(--orange);margin-bottom:12px;"></div>
         <div class="section-title">Build a Trade</div>
         <p style="font-size:13px;color:var(--muted);margin-bottom:20px">Select players and picks from your roster below, choose a trade partner, then submit.</p>
 
@@ -1546,11 +1547,6 @@ const PLAYERS = [
 ];
 
 const PICKS_DB = [
-  {id:'pick_2025_1e',name:'2025 Early 1st', value:3500,year:2025,round:1,slot:'early'},
-  {id:'pick_2025_1m',name:'2025 Mid 1st',   value:2800,year:2025,round:1,slot:'mid'},
-  {id:'pick_2025_1l',name:'2025 Late 1st',  value:2200,year:2025,round:1,slot:'late'},
-  {id:'pick_2025_2', name:'2025 2nd',        value:1800,year:2025,round:2,slot:'mid'},
-  {id:'pick_2025_3', name:'2025 3rd',        value:1200,year:2025,round:3,slot:'mid'},
   {id:'pick_2026_1e',name:'2026 Early 1st', value:5717,year:2026,round:1,slot:'early'},
   {id:'pick_2026_1m',name:'2026 Mid 1st',   value:4800,year:2026,round:1,slot:'mid'},
   {id:'pick_2026_1l',name:'2026 Late 1st',  value:4200,year:2026,round:1,slot:'late'},
@@ -1624,16 +1620,18 @@ const AI_GMS = [
 ];
 
 // AI GM rosters — player IDs + pick IDs
+// Tiers: Contenders (gm2,gm4,gm8 ~105k KTC), Mid-tier (gm1,gm5,gm7,gm9 ~80-90k), Rebuilders (gm3,gm6 ~60k + picks)
+// Elite players (>=6000 KTC) assigned to exactly one team each for realistic spread
 const GM_ROSTER_DATA = {
-  gm1:{players:['p1','p34','p35','p70','p71','p6','p36','p37','p111','p77','p78','p41','p84','p85','p43','p116','p89','p88','p50','p87'],picks:['pick_2026_1e','pick_2026_2e','pick_2027_1m']},
-  gm2:{players:['p5','p30','p36','p70','p71','p110','p35','p74','p10','p32','p40','p76','p77','p114','p33','p44','p79','p86','p117','p82'],picks:['pick_2026_4']},
-  gm3:{players:['p7','p51','p52','p94','p95','p119','p50','p85','p86','p53','p87','p116','p89','p88','p22','p84','p83','p81','p118','p120'],picks:['pick_2026_3','pick_2026_4','pick_2025_3']},
-  gm4:{players:['p2','p30','p31','p70','p110','p111','p5','p35','p71','p74','p3','p32','p33','p38','p72','p75','p73','p112','p113','p115'],picks:['pick_2027_1e','pick_2026_1e']},
-  gm5:{players:['p8','p34','p41','p76','p78','p114','p44','p45','p82','p83','p84','p85','p117','p118','p50','p87','p86','p88','p53','p81'],picks:['pick_2026_2','pick_2027_2','pick_2026_3']},
-  gm6:{players:['p9','p38','p39','p72','p73','p43','p46','p47','p48','p54','p55','p56','p57','p90','p91','p92','p93','p122','p123','p124'],picks:['pick_2026_1e','pick_2026_1m','pick_2027_1e','pick_2027_1m','pick_2027_2e','pick_2026_2e']},
-  gm7:{players:['p6','p35','p36','p70','p71','p111','p37','p41','p77','p78','p44','p45','p82','p83','p114','p116','p50','p85','p86','p87'],picks:['pick_2026_1m','pick_2026_2','pick_2027_1m']},
-  gm8:{players:['p1','p30','p35','p70','p110','p5','p36','p71','p74','p111','p33','p37','p77','p32','p40','p44','p76','p114','p117','p82'],picks:['pick_2025_1l']},
-  gm9:{players:['p2','p31','p34','p71','p110','p5','p35','p70','p74','p32','p33','p37','p77','p78','p111','p38','p44','p45','p82','p114'],picks:['pick_2026_1m','pick_2026_2','pick_2027_1m']},
+  gm1:{players:['p7','p37','p74','p114','p10','p40','p78','p13','p15','p117','p80','p81','p47','p50','p86','p87','p89','p54','p55','p19'],picks:['pick_2026_2','pick_2027_2']},
+  gm2:{players:['p2','p33','p71','p111','p34','p5','p13','p41','p79','p117','p84','p85','p86','p49','p51','p88','p94','p95','p18','p57'],picks:['pick_2026_4']},
+  gm3:{players:['p11','p42','p46','p48','p50','p53','p54','p55','p56','p57','p90','p91','p93','p94','p95','p124','p19','p20','p21','p22'],picks:['pick_2026_1m','pick_2026_2','pick_2026_3','pick_2027_1m','pick_2027_2']},
+  gm4:{players:['p1','p30','p70','p110','p31','p3','p40','p78','p116','p123','p85','p82','p83','p50','p87','p89','p93','p22','p21','p17'],picks:['pick_2026_4']},
+  gm5:{players:['p9','p12','p75','p77','p46','p50','p51','p79','p47','p118','p119','p80','p81','p84','p86','p52','p53','p92','p93','p57'],picks:['pick_2026_2','pick_2027_2']},
+  gm6:{players:['p10','p42','p46','p47','p48','p54','p55','p56','p57','p90','p91','p92','p93','p94','p95','p125','p19','p20','p21','p22'],picks:['pick_2026_1e','pick_2026_1m','pick_2027_1e','pick_2027_1m','pick_2026_2e','pick_2027_2e']},
+  gm7:{players:['p8','p39','p76','p115','p41','p16','p14','p118','p116','p45','p49','p85','p82','p83','p51','p88','p90','p94','p56','p17'],picks:['pick_2026_2','pick_2027_2']},
+  gm8:{players:['p4','p32','p35','p72','p112','p38','p44','p45','p78','p118','p80','p82','p122','p47','p53','p91','p92','p16','p14','p15'],picks:['pick_2027_1m']},
+  gm9:{players:['p6','p36','p73','p113','p43','p79','p116','p45','p48','p119','p120','p121','p46','p83','p52','p18','p125','p84','p54','p57'],picks:['pick_2026_2','pick_2027_2']},
 };
 
 function buildGmRoster(gmId) {
@@ -3013,7 +3011,18 @@ function renderStandings() {
 function switchTab(tab) {
   document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
-  event.target.closest('.nav-tab').classList.add('active');
+  // Support both click-driven (event.target) and programmatic calls
+  const clickedTab = (typeof event !== 'undefined' && event && event.target)
+    ? event.target.closest('.nav-tab')
+    : null;
+  if (clickedTab) {
+    clickedTab.classList.add('active');
+  } else {
+    document.querySelectorAll('.nav-tab').forEach(t => {
+      const oc = t.getAttribute('onclick') || '';
+      if (oc.includes("'" + tab + "'")) t.classList.add('active');
+    });
+  }
   const panel = document.getElementById(`panel-${tab}`);
   if (panel) panel.classList.add('active');
 
@@ -3196,9 +3205,7 @@ function counterOffer(offerId) {
       <div id='pd-stats' class='pd-stats'></div>
     </div>
     <div id='pd-injury-area'></div>
-    
-          <div id="counterBanner" style="display:none;background:linear-gradient(135deg,#1e293b,#0f172a);border-left:3px solid var(--orange);padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;color:var(--orange);margin-bottom:12px;"></div>
-          <div class='pd-actions'>
+    <div class='pd-actions'>
       <button id='pd-add-trade-btn' class='btn-pd-trade'>ADD TO TRADE</button>
       <button class='btn-pd-close' onclick='closePlayerDetail()'>&#x2715; CLOSE</button>
     </div>
