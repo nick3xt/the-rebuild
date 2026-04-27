@@ -1212,6 +1212,27 @@ body::before {
 .btn-counter:hover{border-color:var(--orange);color:var(--orange);}
 .counter-sent-badge{padding:7px 12px;background:#1e3a2e;color:#4ade80;border-radius:7px;font-size:12px;font-weight:700;}
 #counterBanner{display:none;background:linear-gradient(135deg,#1e293b,#0f172a);border-left:3px solid var(--orange);padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;color:var(--orange);margin-bottom:12px;}
+/* === NEW FEATURE STYLES === */
+
+/* Fairness label colors */
+.fairness-label { font-size:11px; font-weight:700; padding:2px 7px; border-radius:4px; display:inline-block; }
+
+/* Trade block */
+.block-badge { background:#c0392b; color:#fff; font-size:10px; font-weight:700; padding:1px 5px; border-radius:3px; margin-left:4px; vertical-align:middle; }
+.block-btn { background:transparent; border:1px solid #444; color:#aaa; font-size:10px; padding:2px 6px; border-radius:4px; cursor:pointer; margin-top:4px; width:100%; }
+.block-btn:hover { border-color:#e67e22; color:#e67e22; }
+
+/* News feed */
+.news-feed-list { background:#111; border-radius:8px; padding:8px; max-height:280px; overflow-y:auto; }
+.news-item { padding:6px 8px; border-bottom:1px solid #222; font-size:12px; color:#ccc; line-height:1.4; }
+.news-item:last-child { border-bottom:none; }
+.news-week { background:#e67e22; color:#fff; font-size:10px; font-weight:700; padding:1px 5px; border-radius:3px; margin-right:6px; }
+.news-empty { color:#555; font-size:12px; padding:8px; text-align:center; }
+
+/* Premium trade partner dropdown */
+#tradePartnerSelect { background:#1a1a1a; color:#eee; border:1px solid #333; border-radius:6px; padding:6px 10px; font-size:13px; width:100%; }
+#tradePartnerSelect:focus { border-color:#e67e22; outline:none; box-shadow:0 0 0 2px rgba(230,126,34,0.25); }
+#tradePartnerSelect option { background:#1a1a1a; color:#eee; }
 </style>
 </head>
 <body>
@@ -1393,6 +1414,10 @@ body::before {
             </thead>
             <tbody id="standingsBody"></tbody>
           </table>
+        </div>
+        <div class="section-title" style="margin-top:18px;">📰 League News &amp; Transactions</div>
+        <div id="newsFeedList" class="news-feed-list">
+          <div class="news-empty">📰 No news yet. Make some moves!</div>
         </div>
       </div>
 
@@ -1800,6 +1825,22 @@ function evaluateTrade(offeredAssets, requestedAssets, gmPersonality) {
   const receiveVal = requestedAssets.reduce((s,a)=>s+(a.value||0),0);
   const ratio = offerVal / Math.max(receiveVal, 1);
 
+  // HARD REJECT: user offering < 75% of value received (robbery)
+  if (ratio < 0.75) {
+    const _r = {
+      pick_seller: "Come back with real value — this is robbery.",
+      win_now: "Bring equal value or walk.",
+      firesale: "Even a firesale has limits. No.",
+      premium_chaser: "Elite assets for scraps? Absolutely not.",
+      aggressive: "Highway robbery. Not happening.",
+      rebuilder: "Even rebuilds deserve fair value.",
+      negotiator: "I negotiate — I do not donate.",
+      contender: "I am not giving away assets. Rejected.",
+      data_gm: "Analytics flag this as robbery. Hard pass."
+    };
+    return { result: "reject", msg: _r[gmPersonality] || "Way too low. Come back with a real offer." };
+  }
+
   const offeredPicks   = offeredAssets.filter(a=>a.id&&a.id.startsWith('pick'));
   const receivedPlayers = requestedAssets.filter(a=>!a.id?.startsWith('pick'));
   const offeredPlayers  = offeredAssets.filter(a=>!a.id?.startsWith('pick'));
@@ -1830,7 +1871,7 @@ function evaluateTrade(offeredAssets, requestedAssets, gmPersonality) {
     }
     case 'firesale': {
       const agingReq = requestedAssets.filter(p=>!p.id?.startsWith('pick')&&p.age>=30);
-      if (agingReq.length>0 && ratio>=0.52) return {result:'accept', msg:'Get these veterans off my hands! '+rnd(msgs.accept_great)};
+      if (agingReq.length>0 && ratio>=0.80) return {result:'accept', msg:'Get these veterans off my hands! '+rnd(msgs.accept_great)};
       if (ratio>=0.82) return {result:'accept', msg: rnd(msgs.accept_ok)};
       if (ratio>=0.60) return {result:'counter', msg: rnd(msgs.counter_close)};
       return {result:'reject', msg: rnd(msgs.reject)};
@@ -1846,7 +1887,7 @@ function evaluateTrade(offeredAssets, requestedAssets, gmPersonality) {
     case 'aggressive': {
       if (ratio>=0.92) return {result:'accept', msg:'Yeah! '+rnd(msgs.accept_great)};
       if (ratio>=0.72) return {result:'counter', msg: rnd(msgs.counter_close)};
-      if (ratio>=0.55 && Math.random()>0.55) return {result:'accept', msg:'Eh, fine. '+rnd(msgs.accept_ok)};
+      if (ratio>=0.85 && Math.random()>0.55) return {result:'accept', msg:'Eh, fine. '+rnd(msgs.accept_ok)};
       return {result:'reject', msg: rnd(msgs.reject)+' I\'ll come at you with a counter soon.'};
     }
     case 'rebuilder': {
@@ -1860,7 +1901,7 @@ function evaluateTrade(offeredAssets, requestedAssets, gmPersonality) {
     }
     case 'negotiator': {
       if (ratio>=0.97) return {result:'accept', msg:'Alright, you wore me down. '+rnd(msgs.accept_ok)};
-      if (ratio>=0.48) return {result:'counter', msg:'Interesting offer. Let me come back to you with a counter...'};
+      if (ratio>=0.75) return {result:'counter', msg:'Interesting offer. Let me come back to you with a counter...'};
       return {result:'reject', msg:'Way too low. Come back with a real offer.'};
     }
     case 'contender': {
@@ -1922,7 +1963,7 @@ function offerIsFair(youGive, youGet) {
   const get  = youGet.reduce((s,a)=>s+(a.value||0),0);
   if (give < 100) return false;
   const ratio = get / give;
-  return ratio >= 0.80 && ratio <= 1.20;
+  return ratio >= 0.85 && ratio <= 1.15;
 }
 
 function tryGenerateProactiveOffer(gm, gmRoster, humanRoster) {
@@ -1933,6 +1974,15 @@ function tryGenerateProactiveOffer(gm, gmRoster, humanRoster) {
 
   let offer = null;
 
+  // Sort human roster: trade-blocked players first (AI more likely to target)
+  const _blockedIds = STATE.tradeBlock || [];
+  if (_blockedIds.length > 0) {
+    humanRoster = [...humanRoster].sort((a,b) => {
+      const aB = _blockedIds.includes(a.id) ? -1 : 0;
+      const bB = _blockedIds.includes(b.id) ? -1 : 0;
+      return aB - bB;
+    });
+  }
   switch(gm.personality) {
 
     case 'pick_seller': {
@@ -2033,6 +2083,8 @@ let STATE = {
   humanRoster: null,
   gmRosters: {},
   inbox: [],
+  newsFeed: [],
+  tradeBlock: [],
   inboxRead: new Set(),
   selectedForTrade: [], // ids of human assets selected
   tradeBuilderGive: [], // human assets in trade builder
@@ -2216,7 +2268,7 @@ function updateTeamName(val) {
 
 function scheduleAIOffers() {
   // Every 45-90 seconds an AI GM might send a new offer
-  const delay = 45000 + Math.random() * 45000;
+  const delay = 18000 + Math.random() * 22000;
   setTimeout(() => {
     if (!STATE.initialized) return;
     const eligible = AI_GMS.filter(gm => Math.random() < gm.tradeFreq);
@@ -2241,6 +2293,43 @@ function scheduleAIOffers() {
 // ====================================================
 // RENDER HELPERS
 // ====================================================
+function toggleTradeBlock(playerId) {
+  if (!STATE.tradeBlock) STATE.tradeBlock = [];
+  const _tbIdx = STATE.tradeBlock.indexOf(playerId);
+  const _tbPlayer = (STATE.myRoster || []).find(p => p.id === playerId);
+  const _tbName = _tbPlayer ? _tbPlayer.name : playerId;
+  if (_tbIdx === -1) {
+    STATE.tradeBlock.push(playerId);
+    addNewsItem("🔴 TRADE BLOCK: " + _tbName + " placed on trade block");
+  } else {
+    STATE.tradeBlock.splice(_tbIdx, 1);
+    addNewsItem("✅ OFF BLOCK: " + _tbName + " removed from trade block");
+  }
+  saveGame();
+  renderRosterZones();
+  renderTaxiIR();
+}
+
+function addNewsItem(text) {
+  if (!text) return;
+  if (!STATE.newsFeed) STATE.newsFeed = [];
+  STATE.newsFeed.unshift({ text: text, week: STATE.week || 0, ts: Date.now() });
+  if (STATE.newsFeed.length > 15) STATE.newsFeed.length = 15;
+  renderNewsFeed();
+}
+
+function renderNewsFeed() {
+  const el = document.getElementById("newsFeedList");
+  if (!el) return;
+  if (!STATE.newsFeed || STATE.newsFeed.length === 0) {
+    el.innerHTML = '<div class="news-empty">📰 No news yet. Make some moves!</div>';
+    return;
+  }
+  el.innerHTML = STATE.newsFeed.map(item =>
+    `<div class="news-item"><span class="news-week">WK${item.week}</span> ${item.text}</div>`
+  ).join("");
+}
+
 function renderAll() {
   renderGradeCard();
   renderRosterZones();
@@ -2334,7 +2423,9 @@ function renderPlayerCard(asset, clickable, isSelected, context) {
     <div class="player-card-bottom">
       <span class="pos-badge pos-${asset.pos}">${asset.pos}</span>
       <span class="player-value">${asset.value?.toLocaleString() || '—'}</span>
+      ${(STATE.tradeBlock||[]).includes(asset.id) ? '<span class="block-badge">🔴 BLOCK</span>' : ''}
       <span class="player-grade-stamp" style="color:${gi.color};border-color:${gi.color}">${gi.grade}</span>
+    <button class="block-btn" onclick="event.stopPropagation();toggleTradeBlock('${asset.id}')">${(STATE.tradeBlock||[]).includes(asset.id)?'🔴 UNBLOCK':'🟢 BLOCK'}</button>
     </div>
   </div>`;
 }
@@ -2585,11 +2676,32 @@ function advanceSeason() {
     _simulatePlayoffRound();
   }
 
+  // AI vs AI trade (30-40% chance per week)
+  if (Math.random() < 0.35 && typeof LEAGUE !== "undefined" && LEAGUE && STATE.gmRosters) {
+    const _aiIds = Object.keys(STATE.gmRosters).filter(id => id !== STATE.userTeamId && id !== "user");
+    if (_aiIds.length >= 2) {
+      const _g1id = _aiIds[Math.floor(Math.random() * _aiIds.length)];
+      let _g2id; do { _g2id = _aiIds[Math.floor(Math.random() * _aiIds.length)]; } while (_g2id === _g1id);
+      const _r1 = (STATE.gmRosters[_g1id] || []).filter(a => a.name);
+      const _r2 = (STATE.gmRosters[_g2id] || []).filter(a => a.name);
+      if (_r1.length > 0 && _r2.length > 0) {
+        const _a1 = _r1[Math.floor(Math.random() * _r1.length)];
+        const _a2 = _r2[Math.floor(Math.random() * _r2.length)];
+        STATE.gmRosters[_g1id] = (STATE.gmRosters[_g1id]||[]).filter(a=>a.id!==_a1.id).concat([{..._a2}]);
+        STATE.gmRosters[_g2id] = (STATE.gmRosters[_g2id]||[]).filter(a=>a.id!==_a2.id).concat([{..._a1}]);
+        const _gm1 = LEAGUE.find(g=>g.id===_g1id); const _gm2 = LEAGUE.find(g=>g.id===_g2id);
+        const _msg = "🔄 TRADE: "+(_gm1?_gm1.name:_g1id)+" sends "+_a1.name+" ⇄ "+(_gm2?_gm2.name:_g2id)+" sends "+_a2.name;
+        addNewsItem(_msg);
+        showToast("🔄 League Trade", (_gm1?_gm1.name:_g1id)+" ⇄ "+(_gm2?_gm2.name:_g2id));
+      }
+    }
+  }
   updateSeasonDisplay();
   saveGame();
   renderInboxPreview();
   renderInboxFull();
   updateInboxBadge();
+  renderNewsFeed();
 }
 
 // legacy alias kept for safety
@@ -2601,7 +2713,7 @@ function renderOfferCard(offer, isPreview) {
   const youGiveVal = (offer.youGive||[]).reduce((s,a)=>s+(a.value||0),0);
   const youGetVal  = (offer.youGet||[]).reduce((s,a)=>s+(a.value||0),0);
   const ratio = youGetVal / Math.max(youGiveVal,1);
-  const fairnessLabel = ratio >= 0.90 ? '✅ FAIR TRADE' : ratio >= 0.72 ? '⚠️ SLIGHT OVERPAY' : '❌ BAD VALUE';
+  const fairnessLabel = ratio >= 1.50 ? '🚨 DUMP TRADE' : ratio >= 1.30 ? '🟠 OVERPAYING BIG' : ratio >= 1.10 ? '🟡 OVERPAYING' : ratio >= 0.91 ? '✅ FAIR' : ratio >= 0.77 ? '⚡ SLIGHT EDGE' : ratio >= 0.67 ? '⚠️ LOPSIDED' : '🚨 HIGHWAY ROBBERY';
   const fairnessColor = ratio >= 0.90 ? 'var(--green-glow)' : ratio >= 0.72 ? '#eab308' : 'var(--red)';
 
   const giveNames = (offer.youGive||[]).map(a=>`<span class="offer-asset-chip">${a.name}</span>`).join('');
@@ -2742,6 +2854,7 @@ function executeTrade(humanGives, humanGets, gmId) {
       }
     });
   }
+  renderGradeCard();
 }
 
 // ====================================================
@@ -2944,6 +3057,7 @@ function submitTrade() {
       <div style="font-size:14px;margin-bottom:16px">${gm.avatar} <strong>${gm.name}</strong> says: <em>"${result.msg}"</em></div>
       <div style="font-size:13px;color:var(--muted);margin-bottom:16px">The trade has been executed. Your roster has been updated.</div>`;
     executeTrade(give, get, gmId);
+    const _gmObj = (typeof LEAGUE !== 'undefined' && LEAGUE || []).find(g=>g.id===gmId); addNewsItem('💰 YOU TRADED: '+(give.map(a=>a.name||a.id).join(', '))+' ⇄ '+(get.map(a=>a.name||a.id).join(', '))+(_gmObj?' with '+_gmObj.name:''));
     STATE.tradeBuilderGive = [];
     STATE.tradeBuilderGet = [];
     saveGame();
@@ -3012,14 +3126,10 @@ function switchTab(tab) {
   const clickedTab = (typeof event !== 'undefined' && event && event.target)
     ? event.target.closest('.nav-tab')
     : null;
-  if (clickedTab) {
-    clickedTab.classList.add('active');
-  } else {
-    document.querySelectorAll('.nav-tab').forEach(t => {
+  document.querySelectorAll('.nav-tab').forEach(t => {
       const oc = t.getAttribute('onclick') || '';
-      if (oc.includes("'" + tab + "'")) t.classList.add('active');
-    });
-  }
+    if (oc.includes("'" + tab + "'")) t.classList.add('active');
+  });
   const panel = document.getElementById(`panel-${tab}`);
   if (panel) panel.classList.add('active');
 
@@ -3172,6 +3282,7 @@ function counterOffer(offerId) {
   saveGame(); renderAll();
   renderTradeYourRoster();
   renderPartnerRoster(offer.gmId);
+  switchTab('trade');
 }
 
 </script>
