@@ -1173,6 +1173,45 @@ body::before {
   .entry-title  { font-size: 48px; }
   .entry-screen { padding-top: 6vh; }
 }
+
+/* ── Feature 1: Taxi move buttons ─────────────────── */
+.taxi-movable-wrap{position:relative;display:inline-block;width:100%;}
+.btn-taxi-action{display:block;width:100%;margin-top:4px;padding:5px 0;font-size:11px;font-weight:700;letter-spacing:.5px;border:none;border-radius:6px;cursor:pointer;transition:opacity .15s;}
+.btn-taxi-action:hover{opacity:.82;}
+.btn-promote-roster{background:var(--orange);color:#000;}
+.btn-send-taxi{background:#334155;color:var(--orange);}
+/* ── Feature 2: IR injury tags ────────────────────── */
+.ir-card-wrap{position:relative;}
+.injury-tag{font-size:11px;font-weight:600;padding:3px 8px;border-radius:4px;margin-bottom:4px;background:rgba(239,68,68,.18);color:#f87171;display:inline-block;}
+.injury-tag.cleared{background:rgba(34,197,94,.15);color:#4ade80;}
+/* ── Feature 3: Player detail modal ───────────────── */
+#playerDetailModal{position:fixed;inset:0;z-index:9999;pointer-events:none;display:flex;align-items:flex-end;}
+#playerDetailModal.open{pointer-events:all;}
+.pd-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.55);opacity:0;transition:opacity .25s;}
+#playerDetailModal.open .pd-backdrop{opacity:1;}
+.pd-sheet{position:relative;width:100%;max-width:520px;margin:0 auto;background:#1a1a2e;border-radius:18px 18px 0 0;padding:24px 20px 32px;transform:translateY(100%);transition:transform .28s cubic-bezier(.32,1,.28,1);}
+#playerDetailModal.open .pd-sheet{transform:translateY(0);}
+.pd-handle{width:36px;height:4px;background:#3b3b5c;border-radius:2px;margin:0 auto 18px;}
+.pd-header{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
+.pd-pos-badge{padding:4px 10px;border-radius:6px;font-size:13px;font-weight:800;}
+.pd-name{font-size:20px;font-weight:800;color:var(--white);}
+.pd-team{font-size:13px;color:var(--muted);margin-top:2px;}
+.pd-section{margin-bottom:14px;}
+.pd-section-title{font-size:10px;font-weight:700;letter-spacing:1px;color:var(--orange);text-transform:uppercase;margin-bottom:6px;}
+.pd-value-row{display:flex;gap:12px;flex-wrap:wrap;}
+.pd-value-chip{background:#0f0f1e;border:1px solid #2a2a4a;border-radius:8px;padding:8px 14px;text-align:center;}
+.pd-value-chip .chip-num{font-size:18px;font-weight:800;color:var(--orange);}
+.pd-value-chip .chip-lbl{font-size:10px;color:var(--muted);margin-top:2px;}
+.pd-stats{font-size:13px;color:#cbd5e1;line-height:1.6;background:#0f0f1e;border-radius:8px;padding:10px 14px;}
+.pd-injury{font-size:13px;font-weight:600;color:#f87171;margin-bottom:8px;}
+.pd-actions{display:flex;gap:10px;margin-top:18px;}
+.btn-pd-trade{flex:1;padding:12px;background:var(--orange);color:#000;border:none;border-radius:10px;font-size:14px;font-weight:800;cursor:pointer;}
+.btn-pd-close{padding:12px 18px;background:#1e1e38;color:var(--muted);border:1px solid #2a2a4a;border-radius:10px;font-size:14px;cursor:pointer;}
+/* ── Feature 4: Counter button + banner ───────────── */
+.btn-counter{padding:7px 12px;background:transparent;color:#94a3b8;border:1px solid #334155;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;transition:border-color .15s,color .15s;}
+.btn-counter:hover{border-color:var(--orange);color:var(--orange);}
+.counter-sent-badge{padding:7px 12px;background:#1e3a2e;color:#4ade80;border-radius:7px;font-size:12px;font-weight:700;}
+#counterBanner{display:none;background:linear-gradient(135deg,#1e293b,#0f172a);border-left:3px solid var(--orange);padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;color:var(--orange);margin-bottom:12px;}
 </style>
 </head>
 <body>
@@ -1690,7 +1729,7 @@ const DRAFTABLE_POOL={
 const TAXI_POOL_D=[
   {id:'dtx1', name:'Jaydn Ott',               pos:'RB',team:'SF', age:22,value:2400,rookie:true},
   {id:'dtx2', name:'Ollie Gordon II',          pos:'RB',team:'TEN',age:22,value:2800,rookie:true},
-  {id:'dtx3', name:'Emeka Egbuka',             pos:'WR',team:'TB', age:23,value:2800,rookie:true},
+  {id:'dtx3', name:'Tez Johnson',               pos:'WR',team:'SEA',age:22,value:1950,rookie:true},
   {id:'dtx4', name:"Dont'e Thornton",          pos:'WR',team:'NE', age:23,value:2400,rookie:true},
   {id:'dtx5', name:'Jack Bech',                pos:'WR',team:'LV', age:23,value:2200,rookie:true},
   {id:'dtx6', name:'Elic Ayomanor',            pos:'WR',team:'CLE',age:22,value:2200,rookie:true},
@@ -1701,6 +1740,10 @@ const TAXI_POOL_D=[
   {id:'dtx11',name:'Brashard Smith',           pos:'WR',team:'NYJ',age:23,value:2200,rookie:true},
   {id:'dtx12',name:'Marcus Rosemy-Jacksaint',  pos:'WR',team:'GB', age:24,value:2000,rookie:true},
 ];
+
+// ── INJURY POOL ───────────────────────────────────────────────────────────
+const INJURY_POOL = ['ACL Tear','Torn Meniscus','Broken Collarbone','Hamstring Strain','Torn Achilles','Fractured Wrist','Back Injury','Knee Sprain','High Ankle Sprain','Shoulder Dislocation','Concussion Protocol','Rib Fracture'];
+
 
 const BAD_PICKS_POOL=[
   {id:'bp1',name:'2026 3rd (1)',value:1600,year:2026,round:3,slot:'mid'},
@@ -2281,7 +2324,7 @@ function renderPlayerCard(asset, clickable, isSelected, context) {
   const gi = playerGradeInfo(asset.value);
   const sel = isSelected ? 'selected' : '';
   const inj = asset.injured ? 'injured' : '';
-  const onClick = clickable ? `onclick="toggleAssetSelect('${asset.id}','${context}')"` : '';
+  const onClick = `onclick="openPlayerDetail('${asset.id}','${context}')"`;
   const initials = getInitials(asset.name);
 
   return `<div class="player-card ${sel} ${inj}" ${onClick} data-id="${asset.id}">
@@ -2337,7 +2380,13 @@ function renderGroupedCards(items, context) {
       <span class="pos-divider-label" style="color:${meta.color};background:${meta.color.replace('var(--pos-','rgba(').replace(')',',0.1)')};">${meta.label}</span>
       <div class="pos-divider-line" style="background:${meta.color}"></div>
     </div>`;
-    html += group.map(p => renderPlayerCard(p, true, STATE.selectedForTrade.includes(p.id), context)).join('');
+    html += group.map(p => {
+      const card = renderPlayerCard(p, true, STATE.selectedForTrade.includes(p.id), context);
+      if (context === 'roster' && p.rookie && (STATE.humanRoster?.taxi||[]).length < 4) {
+        return '<div class="taxi-movable-wrap">' + card + '<button class="btn-taxi-action btn-send-taxi" onclick="sendToTaxi(\'' + p.id + '\')">&#8595; SEND TO TAXI</button></div>';
+      }
+      return card;
+    }).join('');
   });
   return html;
 }
@@ -2353,8 +2402,23 @@ function renderRosterZones() {
 function renderTaxiIR() {
   const taxiGrid = document.getElementById('taxi-grid');
   const irGrid = document.getElementById('ir-grid');
-  taxiGrid.innerHTML = (STATE.humanRoster?.taxi||[]).map(p => renderPlayerCard(p, false, false, 'taxi')).join('') || '<p style="color:var(--muted);font-size:13px">No taxi squad players.</p>';
-  irGrid.innerHTML = (STATE.humanRoster?.ir||[]).map(p => renderPlayerCard(p, false, false, 'ir')).join('') || '<p style="color:var(--muted);font-size:13px">No IR players.</p>';
+  const _taxi = STATE.humanRoster?.taxi || [];
+  taxiGrid.innerHTML = _taxi.length ? _taxi.map(p => {
+    const card = renderPlayerCard(p, false, false, 'taxi');
+    return '<div class="taxi-movable-wrap">' + card + '<button class="btn-taxi-action" onclick="promoteToRoster(\'' + p.id + '\')">&#8593; PROMOTE TO ROSTER</button></div>';
+  }).join('') : '<p style="color:var(--muted);font-size:13px">No taxi squad players.</p>';
+  const _ir = STATE.humanRoster?.ir || [];
+  // Assign injury types if missing
+  _ir.forEach(p => { if (!p.injuryType) p.injuryType = INJURY_POOL[Math.floor(Math.random() * INJURY_POOL.length)]; });
+  const _week = STATE.week || 1;
+  irGrid.innerHTML = _ir.length ? _ir.map(p => {
+    const card = renderPlayerCard(p, false, false, 'ir');
+    const cleared = _week > (p.returnWeek || 99);
+    const injLabel = cleared
+      ? '<div class="injury-tag cleared">&#10003; Cleared to Return</div>'
+      : '<div class="injury-tag">' + (p.injuryType || 'Injury') + ' — Returns Week ' + (p.returnWeek || '?') + '</div>';
+    return '<div class="ir-card-wrap">' + injLabel + card + '</div>';
+  }).join('') : '<p style="color:var(--muted);font-size:13px">No IR players.</p>';
 }
 
 function renderPicksPanel() {
@@ -2550,8 +2614,9 @@ function renderOfferCard(offer, isPreview) {
 
   const actions = isPreview ? '' : `
     <div class="offer-actions">
-      <button class="btn-accept" onclick="acceptOffer('${offer.id}')">✓ ACCEPT</button>
-      <button class="btn-reject" onclick="rejectOffer('${offer.id}')">✗ DECLINE</button>
+      <button class="btn-accept" onclick="acceptOffer('${offer.id}')">&#10003; ACCEPT</button>
+      ${offer.counterSent ? '<div class="counter-sent-badge">&#8596; COUNTER SENT</div>' : `<button class="btn-counter" onclick="counterOffer('${offer.id}')">&#8596; COUNTER</button>`}
+      <button class="btn-reject" onclick="rejectOffer('${offer.id}')">&#10007; DECLINE</button>
     </div>`;
 
   return `<div class="offer-item ${offer.read?'read':''}" onclick="markRead('${offer.id}')">
@@ -2813,6 +2878,70 @@ function submitTrade() {
   const gmRoster = STATE.gmRosters[gmId];
   const result = evaluateTrade(give, get, gm.personality);
 
+  // ── Feature 5: Enhanced AI decline logic ──────────────────────────────────
+  const _giveVal = give.reduce((s,a)=>s+(a.value||0),0);
+  const _getVal  = get.reduce((s,a)=>s+(a.value||0),0);
+  const _userRatio = _getVal / Math.max(_giveVal, 1); // what user gets / gives
+
+  const _hardRejectLines = {
+    pick_seller: 'That\'s robbery. Come back with real assets.',
+    win_now:     'You think I can\'t read a value chart? Come serious.',
+    firesale:    'Even I know a bad deal. Walk away.',
+    premium_chaser: 'This is beneath my standards. Bring elite value.',
+    aggressive:  'Not a chance. Show me real value.',
+    rebuilder:   'My rebuild doesn\'t start by giving away assets for peanuts.',
+    negotiator:  'I\'ve seen better offers. Try again.',
+    contender:   'Championships aren\'t built by giving value away. Pass.',
+    data_gm:     'The numbers say no — hard no. Recalibrate your offer.'
+  };
+  const _softRejectLines = {
+    pick_seller:  'Not quite there. Could sweeten that.',
+    win_now:      'Interesting, but I need more to move on this.',
+    firesale:     'Close, but not enough. Add something.',
+    premium_chaser: 'Almost compelling. Add a premium asset.',
+    aggressive:   'You\'re close but not there. Up the offer.',
+    rebuilder:    'I\'ll pass for now but might revisit.',
+    negotiator:   'There\'s something here but not enough. Counter coming.',
+    contender:    'Not quite championship-level value. Pass for now.',
+    data_gm:      'Metrics are close but not favorable enough. I\'ll pass.'
+  };
+  // Hard reject: user getting >40% more value
+  if (_userRatio > 1.40 && result.result !== 'reject') {
+    result.result = 'reject';
+    result.msg = _hardRejectLines[gm.personality] || 'No deal. Bring real value.';
+    result.hardReject = true;
+  }
+  // Win-now: rejects future picks for veterans
+  if (gm.personality === 'win_now' && result.result !== 'reject') {
+    const _futurePicks = get.filter(a => a.year && parseInt(a.year) >= 2027);
+    const _requestingVets = give.filter(a => !a.year && (a.age||0) >= 28);
+    if (_futurePicks.length && _requestingVets.length) {
+      result.result = 'reject';
+      result.msg = 'Future picks for my veterans? I need wins NOW, not promises.';
+      result.hardReject = true;
+    }
+  }
+  // Rebuilder: rejects giving picks unless user offers elite (>6000) value
+  if (gm.personality === 'rebuilder' && result.result !== 'reject') {
+    const _gmGivingPicks = get.filter(a => a.year);
+    const _userOffersElite = give.some(a => (a.value||0) >= 6000);
+    if (_gmGivingPicks.length && !_userOffersElite) {
+      result.result = 'reject';
+      result.msg = 'I don\'t trade my picks without elite value coming back.';
+      result.hardReject = true;
+    }
+  }
+  // Soft reject: user getting 20-40% more — show toast + queue counter
+  if (_userRatio >= 1.20 && _userRatio <= 1.40 && result.result === 'accept') {
+    result.result = 'reject';
+    result.msg = _softRejectLines[gm.personality] || 'Not enough value. Pass.';
+    result.softReject = true;
+  }
+  // Toast on any decline
+  if (result.result === 'reject') {
+    showToast(gm.name + ' passed on your offer.');
+  }
+
   let content = '';
   if (result.result === 'accept') {
     content = `
@@ -2940,7 +3069,140 @@ document.getElementById('teamNameInputFresh').addEventListener('keydown',functio
 document.addEventListener('DOMContentLoaded', function() {
   showEntryScreen();
 });
+
+
+// FEATURE 1: Taxi Promotions/Demotions
+function promoteToRoster(taxiPlayerId) {
+  const taxi = STATE.humanRoster?.taxi || [];
+  const starters = STATE.humanRoster?.starters || [];
+  const idx = taxi.findIndex(p => p.id === taxiPlayerId);
+  if (idx === -1) return;
+  if (starters.length >= 20) { showToast('Roster is full — cut a player first.'); return; }
+  const player = {...taxi[idx], rookie: false};
+  STATE.humanRoster.taxi = taxi.filter((_,i) => i !== idx);
+  STATE.humanRoster.starters = [...starters, player];
+  saveGame(); renderAll();
+  showToast(player.name + ' promoted to the active roster!');
+}
+function sendToTaxi(starterId) {
+  const starters = STATE.humanRoster?.starters || [];
+  const taxi = STATE.humanRoster?.taxi || [];
+  if (taxi.length >= 4) { showToast('Taxi squad is full (max 4).'); return; }
+  const idx = starters.findIndex(p => p.id === starterId);
+  if (idx === -1) return;
+  const player = {...starters[idx], rookie: true};
+  STATE.humanRoster.starters = starters.filter((_,i) => i !== idx);
+  STATE.humanRoster.taxi = [...taxi, player];
+  saveGame(); renderAll();
+  showToast(player.name + ' sent to the taxi squad.');
+}
+
+// FEATURE 3: Player Detail Card
+function _generateStats(pos, value) {
+  const t = value>=8000?'elite':value>=5000?'high':value>=3000?'mid':'low';
+  const v = {
+    elite:{qb:[5100,42,6],rb:[1450,14,72,620],wr:[112,1520,14],te:[98,1180,11]},
+    high: {qb:[4200,32,9],rb:[1050,10,55,440],wr:[88,1180,10],te:[72,860,8]},
+    mid:  {qb:[3100,24,11],rb:[720,7,38,290],wr:[62,820,6],te:[44,530,5]},
+    low:  {qb:[1800,14,14],rb:[380,3,21,160],wr:[36,440,3],te:[22,250,2]}
+  };
+  const d=v[t]; const r=(n,s)=>n+Math.floor((Math.random()-0.5)*s);
+  if(pos==='QB') return r(d.qb[0],400).toLocaleString()+' pass yds / '+r(d.qb[1],6)+' TDs / '+r(d.qb[2],3)+' INTs';
+  if(pos==='RB') return r(d.rb[0],200)+' rush yds / '+r(d.rb[1],3)+' TDs / '+r(d.rb[2],10)+' rec / '+r(d.rb[3],100)+' rec yds';
+  if(pos==='WR') return r(d.wr[0],18)+' rec / '+r(d.wr[1],180)+' yds / '+r(d.wr[2],3)+' TDs';
+  if(pos==='TE') return r(d.te[0],16)+' rec / '+r(d.te[1],140)+' yds / '+r(d.te[2],2)+' TDs';
+  return 'Stats unavailable';
+}
+function openPlayerDetail(playerId, context) {
+  const allP = [...(STATE.humanRoster?.starters||[]),...(STATE.humanRoster?.taxi||[]),...(STATE.humanRoster?.ir||[])];
+  Object.values(STATE.gmRosters||{}).forEach(r=>{if(r.starters)allP.push(...r.starters);if(r.picks)allP.push(...r.picks);});
+  const player = allP.find(p=>p.id===playerId);
+  if(!player||player.year) return;
+  const allS = STATE.humanRoster?.starters||[];
+  const posP = allS.filter(p=>p.pos===player.pos).sort((a,b)=>(b.value||0)-(a.value||0));
+  const posRank = posP.findIndex(p=>p.id===player.id)+1||'—';
+  const ovRank = [...allS].sort((a,b)=>(b.value||0)-(a.value||0)).findIndex(p=>p.id===player.id)+1||'—';
+  const isIR=(STATE.humanRoster?.ir||[]).some(p=>p.id===playerId);
+  const isTaxi=(STATE.humanRoster?.taxi||[]).some(p=>p.id===playerId);
+  const stats=(isTaxi&&player.rookie)?'2025: Redshirt / Limited Snaps':_generateStats(player.pos,player.value||0);
+  const injHtml=isIR?'<div class="pd-injury">🩹 '+(player.injuryType||'Injury')+' — Returns Week '+(player.returnWeek||'?')+'</div>':'';
+  const irTag=isIR?' (IR)':isTaxi?' (TAXI)':'';
+  const tradeCtx=(context==='trade_get')?'trade_get':'trade_give';
+  const tradeLabel=(context==='trade_get')?'ADD TO YOU GET':'ADD TO TRADE';
+  document.getElementById('pd-name').textContent=player.name;
+  document.getElementById('pd-pos').textContent=player.pos;
+  document.getElementById('pd-pos').className='pd-pos-badge pos-'+player.pos;
+  document.getElementById('pd-team').textContent=(player.team||'?')+irTag+' · Age '+(player.age||'?');
+  document.getElementById('pd-ktc').textContent=(player.value||0).toLocaleString();
+  document.getElementById('pd-posrank').textContent=player.pos+' #'+posRank;
+  document.getElementById('pd-overallrank').textContent='Overall #'+ovRank;
+  document.getElementById('pd-stats').textContent=stats;
+  document.getElementById('pd-injury-area').innerHTML=injHtml;
+  const btn=document.getElementById('pd-add-trade-btn');
+  btn.textContent=tradeLabel;
+  btn.onclick=()=>{addPlayerToTrade(playerId,tradeCtx);closePlayerDetail();};
+  document.getElementById('playerDetailModal').classList.add('open');
+}
+function closePlayerDetail(){document.getElementById('playerDetailModal').classList.remove('open');}
+function addPlayerToTrade(id,ctx){toggleAssetSelect(id,ctx);}
+
+// FEATURE 4: Counter Trade Offers
+function counterOffer(offerId) {
+  const offer = STATE.inbox.find(o=>o.id===offerId);
+  if(!offer) return;
+  const gm = AI_GMS.find(g=>g.id===offer.gmId);
+  if(!gm) return;
+  offer.counterSent = true;
+  offer.read = true;
+  switchTab('trade');
+  STATE.tradePartnerId = offer.gmId;
+  const sel = document.getElementById('tradePartnerSelect');
+  if(sel) sel.value = offer.gmId;
+  updateTradePartner();
+  STATE.tradeBuilderGet = [...(offer.youGet||[])];
+  STATE.tradeBuilderGive = [];
+  const banner = document.getElementById('counterBanner');
+  if(banner){ banner.textContent = '⇄ Countering offer from '+gm.name; banner.style.display='block'; }
+  saveGame(); renderAll();
+  renderTradeYourRoster();
+  renderPartnerRoster(offer.gmId);
+}
+
 </script>
 </div><!-- end gameContainer -->
+
+<!-- PLAYER DETAIL MODAL (Feature 3) -->
+<div id='playerDetailModal'>
+  <div class='pd-backdrop' onclick='closePlayerDetail()'></div>
+  <div class='pd-sheet'>
+    <div class='pd-handle'></div>
+    <div class='pd-header'>
+      <span id='pd-pos' class='pd-pos-badge'></span>
+      <div>
+        <div id='pd-name' class='pd-name'></div>
+        <div id='pd-team' class='pd-team'></div>
+      </div>
+    </div>
+    <div class='pd-section'>
+      <div class='pd-section-title'>Dynasty Value</div>
+      <div class='pd-value-row'>
+        <div class='pd-value-chip'><div id='pd-ktc' class='chip-num'></div><div class='chip-lbl'>KTC Value</div></div>
+        <div class='pd-value-chip'><div id='pd-posrank' class='chip-num' style='font-size:14px'></div><div class='chip-lbl'>Pos Rank</div></div>
+        <div class='pd-value-chip'><div id='pd-overallrank' class='chip-num' style='font-size:14px'></div><div class='chip-lbl'>On Your Roster</div></div>
+      </div>
+    </div>
+    <div class='pd-section'>
+      <div class='pd-section-title'>2025 Stats</div>
+      <div id='pd-stats' class='pd-stats'></div>
+    </div>
+    <div id='pd-injury-area'></div>
+    
+          <div id="counterBanner" style="display:none;background:linear-gradient(135deg,#1e293b,#0f172a);border-left:3px solid var(--orange);padding:10px 14px;border-radius:8px;font-size:13px;font-weight:600;color:var(--orange);margin-bottom:12px;"></div>
+          <div class='pd-actions'>
+      <button id='pd-add-trade-btn' class='btn-pd-trade'>ADD TO TRADE</button>
+      <button class='btn-pd-close' onclick='closePlayerDetail()'>&#x2715; CLOSE</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
