@@ -927,8 +927,9 @@ body::before {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 24px;
-  overflow: hidden;
+  padding: 24px 20px;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 .entry-screen::before {
   content: '';
@@ -957,6 +958,8 @@ body::before {
   text-align: center;
   max-width: 600px;
   width: 100%;
+  flex-shrink: 0;
+  padding-bottom: 40px;
 }
 .entry-pre {
   font-size: 13px;
@@ -997,11 +1000,12 @@ body::before {
   background: linear-gradient(90deg, transparent, var(--orange), transparent);
   margin: 28px auto 30px;
 }
-.entry-new-panel, .entry-save-panel {
+.entry-new-panel, .entry-new-panel,
+.entry-save-panel {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   width: 100%;
   max-width: 400px;
 }
@@ -1145,6 +1149,22 @@ body::before {
 .sidebar-scroll::-webkit-scrollbar { width: 4px; }
 .sidebar-scroll::-webkit-scrollbar-track { background: transparent; }
 .sidebar-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+/* ── ENTRY SCREEN MOBILE ── */
+@media (max-width: 480px) {
+  .entry-screen { padding: 32px 16px 80px; justify-content: flex-start; padding-top: 10vh; }
+  .entry-title  { font-size: clamp(52px, 18vw, 90px); letter-spacing: -2px; }
+  .entry-pre    { font-size: 11px; letter-spacing: 7px; }
+  .entry-tagline{ font-size: 14px; margin-top: 16px; }
+  .entry-divider{ margin: 20px auto 24px; }
+  .entry-team-input { font-size: 16px; padding: 14px 16px; }
+  .btn-entry-primary { font-size: 13px; padding: 16px 20px; }
+  .entry-specs  { font-size: 9px; white-space: normal; text-align: center; padding: 0 16px; }
+}
+@media (max-width: 360px) {
+  .entry-title  { font-size: 48px; }
+  .entry-screen { padding-top: 6vh; }
+}
 </style>
 </head>
 <body>
@@ -1157,7 +1177,7 @@ body::before {
     <div class="entry-divider"></div>
 
     <!-- No save: show team name input + start button -->
-    <div class="entry-new-panel" id="entryNewPanel" style="display:none">
+    <div class="entry-new-panel" id="entryNewPanel">
       <input class="entry-team-input" id="teamNameInput" placeholder="Name your franchise..." maxlength="32" autocomplete="off" />
       <button class="btn-entry-primary" onclick="startNewGame()">Start Your Rebuild →</button>
     </div>
@@ -2049,6 +2069,7 @@ function showEntryScreen() {
       `${save.teamName} · ${save.phase === 'OFF_SEASON' ? 'Off Season' : save.phase === 'PRESEASON' ? 'Preseason' : save.phase === 'PLAYOFFS' ? 'Playoffs' : `Week ${save.week}`} · Saved ${d}`;
   } else {
     document.getElementById('entryNewPanel').style.display = 'flex';
+    document.getElementById('entryNewPanel').style.flexDirection = 'column';
     document.getElementById('entrySavePanel').style.display = 'none';
   }
 }
