@@ -1498,6 +1498,7 @@ body::before {
           <span id="weekBadge" style="font-size:12px;font-weight:700;color:var(--orange);font-family:'Courier New',monospace;background:rgba(255,107,0,0.1);padding:2px 9px;border-radius:4px;border:1px solid rgba(255,107,0,0.3)">OFF SEASON</span>
         </div>
         <button id="advanceBtn" onclick="advanceSeason()" style="width:100%;background:linear-gradient(135deg,#1a3a1a,#0f280f);border:1px solid var(--green-bright);color:var(--green-glow);padding:11px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:0.5px;transition:all 0.2s;" onmouseover="this.style.background='linear-gradient(135deg,#1e4a1e,#122e12)'" onmouseout="this.style.background='linear-gradient(135deg,#1a3a1a,#0f280f)'" >â­ BEGIN PRESEASON</button>
+        <div id="deadlineBadge" style="display:none;margin-top:8px;text-align:center;font-size:11px;font-weight:700;letter-spacing:1px;color:#ffaa00;background:rgba(255,170,0,0.10);border:1px solid rgba(255,170,0,0.35);border-radius:6px;padding:5px 10px;">⏳ TRADE DEADLINE: WEEK 7</div>
       </div>
 
       <!-- INBOX PREVIEW -->
@@ -2944,6 +2945,10 @@ function updateInboxBadge() {
 }
 
 function _generateWeeklyOffers(maxCount) {
+  // ── TRADE DEADLINE SUPPRESSION ────────────────────────────────
+  // After week 7 the market goes quiet — no new offers until offseason
+  if (STATE.phase === 'REGULAR' && STATE.week >= 7) return 0;
+
   let generated = 0;
   const shuffled = [...AI_GMS].sort(() => Math.random() - 0.5);
 
@@ -3004,6 +3009,56 @@ function _generateWeeklyOffers(maxCount) {
       if (blockPlayer) {
         _generateTargetedOffer(blockPlayer);
       }
+    }
+  }
+
+  // ── TRADE DEADLINE PRESSURE OFFERS (weeks 5–6) ──────────────────
+  // Win Now + Contender GMs go aggressive — they overpay 10–15% and
+  // prefix every offer with 🚨 DEADLINE DEAL to signal urgency
+  if (STATE.phase === 'REGULAR' && (STATE.week === 5 || STATE.week === 6)) {
+    const deadlinePersonalities = ['win_now', 'contender'];
+    const deadlineGMs = AI_GMS.filter(g => deadlinePersonalities.includes(g.personality));
+    for (const gm of deadlineGMs) {
+      if (STATE.inbox.length >= 8) break;
+      // Don't double-send if this GM already has an offer in the inbox
+      const alreadySent = STATE.inbox.some(o => o.from === gm.id);
+      if (alreadySent) continue;
+      const gmRoster = STATE.gmRosters[gm.id];
+      if (!gmRoster) continue;
+      const humanPlayers = [...(STATE.humanRoster?.starters || [])]
+        .filter(p => p.value >= 2500)
+        .sort((a, b) => b.value - a.value);
+      if (!humanPlayers.length) continue;
+      const target = humanPlayers[0];
+      // 10–15% overpay on top of fair value
+      const overpayFactor = 1 + 0.10 + Math.random() * 0.05;
+      const bundle = buildFairBundle(
+        (gmRoster.starters || []),
+        (gmRoster.picks   || []),
+        target.value * overpayFactor,
+        'mixed',
+        0.25
+      );
+      if (!bundle) continue;
+      const deadlineMsgs = [
+        `🚨 DEADLINE DEAL — I need ${target.name} before the market closes. ${bundle.map(a => a.name).join(' + ')} — this is my best offer.`,
+        `🚨 DEADLINE DEAL — Clock's ticking. ${target.name} for ${bundle.map(a => a.name).join(' + ')}. Let's get this done before it's too late.`,
+        `🚨 DEADLINE DEAL — Last chance to move ${target.name}. ${bundle.map(a => a.name).join(' + ')} — I'm overpaying and I know it.`,
+        `🚨 DEADLINE DEAL — Deadline is coming. Send me ${target.name} and take ${bundle.map(a => a.name).join(' + ')} — no games.`,
+      ];
+      const deadlineOffer = {
+        from: gm.id,
+        youGive: [target],
+        youGet: bundle,
+        msg: deadlineMsgs[Math.floor(Math.random() * deadlineMsgs.length)],
+      };
+      // Fairness gate — overpay means ratio > 1 so it always clears the 0.80 floor
+      if (!offerIsFair(deadlineOffer.youGive, deadlineOffer.youGet)) continue;
+      deadlineOffer.id = nextOfferId();
+      deadlineOffer.timestamp = Date.now();
+      deadlineOffer.read = false;
+      STATE.inbox.unshift(deadlineOffer);
+      generated++;
     }
   }
 
@@ -3084,6 +3139,13 @@ function updateSeasonDisplay() {
 
   if (wb)  wb.textContent  = label;
   if (btn) btn.textContent = btnText;
+
+  // ── Trade deadline countdown badge ──────────────────────────────
+  const dlBadge = document.getElementById('deadlineBadge');
+  if (dlBadge) {
+    const showDeadlineBadge = STATE.phase === 'REGULAR' && (STATE.week === 5 || STATE.week === 6);
+    dlBadge.style.display = showDeadlineBadge ? 'block' : 'none';
+  }
 }
 
 // Simulate a single playoff game between two teams using win probability
@@ -3432,6 +3494,11 @@ function advanceSeason() {
     } else {
       STATE.week++;
       STATE.inbox.forEach(o => o.read = true);
+      // ── Trade deadline fires the moment we arrive at week 7 ──────
+      if (STATE.week === 7) {
+        addNews('🚨', 'Trade deadline passed — market quiet until offseason.');
+        showToast('🚨 TRADE DEADLINE HAS PASSED', 'No new trade offers will be generated until the offseason.', 'info');
+      }
       // Snapshot wins before simulation to detect user result
       const _winsBefore = (STATE.standings['user'] || {w:0}).w;
       // Simulate all 5 games this week
@@ -3458,7 +3525,8 @@ function advanceSeason() {
         const wlIcon = userWon ? '✅' : '❌';
         const resultWord = userWon ? 'WIN' : 'LOSS';
         addNews(wlIcon, `Week ${STATE.week} vs ${oppLabel}: ${resultWord} — Record: ${finalRec.w}-${finalRec.l}`);
-        showToast(`${wlIcon} WEEK ${STATE.week} — ${resultWord}`, `vs ${oppLabel} | ${finalRec.w}-${finalRec.l} | ${n} new offer${n!==1?'s':''}.`, userWon?'success':'info');
+        const offerNote = STATE.week >= 7 ? 'Trade deadline passed.' : `${n} new offer${n!==1?'s':''}.`;
+        showToast(`${wlIcon} WEEK ${STATE.week} — ${resultWord}`, `vs ${oppLabel} | ${finalRec.w}-${finalRec.l} | ${offerNote}`, userWon?'success':'info');
       }
     }
 
