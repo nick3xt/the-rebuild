@@ -2025,6 +2025,12 @@ const TAXI_POOL_D=[
   {id:'dtx13',name:'Marshawn Lloyd',  pos:'RB',team:'CAR',age:22,value:1800,rookie:true},
   {id:'dtx14',name:'Tory Horton',     pos:'WR',team:'CLE',age:24,value:2000,rookie:true},
   {id:'dtx15',name:'Isaac Guerendo',  pos:'RB',team:'SF', age:25,value:2000,rookie:true},
+  // 2025/2026 class — teams confirmed post-draft
+  {id:'dtx16',name:'Tez Johnson',        pos:'WR',team:'SEA',age:22,value:1700,rookie:true},
+  {id:'dtx17',name:'Ollie Gordon II',    pos:'RB',team:'MIA',age:22,value:1600,rookie:true},
+  {id:'dtx18',name:'Brashard Smith',     pos:'RB',team:'KC', age:22,value:1400,rookie:true},
+  {id:'dtx19',name:'Jaydn Ott',          pos:'RB',team:'KC', age:22,value:1500,rookie:true},
+  {id:'dtx20',name:'C.J. Donaldson Jr',  pos:'RB',team:'NO', age:23,value:1200,rookie:true},
 ];
 
 const BAD_PICKS_POOL=[
@@ -4223,8 +4229,101 @@ document.getElementById('teamNameInputFresh').addEventListener('keydown',functio
   if (e.key==='Enter') confirmStartFresh();
 });
 
-// On page load: check for save and show appropriate entry panel
+// ====================================================
+// SLEEPER LIVE PLAYER DATA
+// Fetches live NFL player DB, caches 24h in localStorage.
+// Updates team/active status on PLAYERS + TAXI_POOL_D
+// before the game starts. KTC values stay hardcoded.
+// Falls back silently to hardcoded data if fetch fails.
+// ====================================================
+const SLEEPER_CACHE_KEY = 'sleeper_players_cache';
+const SLEEPER_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
+
+async function fetchSleeperPlayers() {
+  // Check localStorage cache first
+  try {
+    const raw = localStorage.getItem(SLEEPER_CACHE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Date.now() - parsed.ts < SLEEPER_CACHE_TTL) {
+        window.sleeperCache = parsed.lookup;
+        return parsed.lookup;
+      }
+    }
+  } catch(e) {}
+
+  // Fetch fresh from Sleeper (~3MB JSON)
+  try {
+    const resp = await fetch('https://api.sleeper.app/v1/players/nfl');
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const rawData = await resp.json();
+
+    // Build lookup: lowercase player name → { team, active, sleeperId }
+    const lookup = {};
+    for (const [id, p] of Object.entries(rawData)) {
+      if (!p.full_name) continue;
+      lookup[p.full_name.toLowerCase()] = {
+        team: p.team || 'FA',
+        active: p.active === true && p.status !== 'Inactive' && p.status !== 'Retired',
+        sleeperId: id
+      };
+    }
+
+    // Persist to localStorage
+    try {
+      localStorage.setItem(SLEEPER_CACHE_KEY, JSON.stringify({ lookup, ts: Date.now() }));
+    } catch(e) { /* quota exceeded */ }
+
+    window.sleeperCache = lookup;
+    return lookup;
+  } catch(e) {
+    console.warn('[Sleeper] fetch failed — using hardcoded data:', e.message);
+    return null;
+  }
+}
+
+function applySleeperDataToPools() {
+  const cache = window.sleeperCache;
+  if (!cache) return;
+
+  // Update PLAYERS array: team + active status
+  for (let i = PLAYERS.length - 1; i >= 0; i--) {
+    const p = PLAYERS[i];
+    const sd = cache[p.name.toLowerCase()];
+    if (!sd) continue;
+    if (!sd.active) { PLAYERS.splice(i, 1); continue; }
+    p.team = sd.team || p.team;
+    if (sd.sleeperId) p.sleeperId = sd.sleeperId;
+  }
+
+  // Update TAXI_POOL_D: team + active status for rookie pool
+  for (let i = TAXI_POOL_D.length - 1; i >= 0; i--) {
+    const p = TAXI_POOL_D[i];
+    const sd = cache[p.name.toLowerCase()];
+    if (!sd) continue;
+    if (!sd.active) { TAXI_POOL_D.splice(i, 1); continue; }
+    p.team = sd.team || p.team;
+    if (sd.sleeperId) p.sleeperId = sd.sleeperId;
+  }
+}
+
+// On page load: sync rosters from Sleeper, then show entry
 document.addEventListener('DOMContentLoaded', function() {
+  // Subtle indicator while syncing
+  const syncEl = document.createElement('div');
+  syncEl.id = 'sleeper-sync-indicator';
+  syncEl.style.cssText = 'position:fixed;bottom:10px;right:14px;font-size:11px;color:#999;z-index:9999;pointer-events:none;';
+  syncEl.textContent = 'Syncing rosters…';
+  document.body.appendChild(syncEl);
+
+  fetchSleeperPlayers()
+    .then(function(cache) { if (cache) applySleeperDataToPools(); })
+    .catch(function() {})
+    .finally(function() {
+      const el = document.getElementById('sleeper-sync-indicator');
+      if (el) el.remove();
+    });
+
   showEntryScreen();
 });
 </script>
