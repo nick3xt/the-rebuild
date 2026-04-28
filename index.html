@@ -1276,6 +1276,28 @@ body::before {
   font-size: 13px;
 }
 
+
+/* SLEEPER-STYLE POSITION BADGES */
+.pos-QB { background: rgba(224,82,82,0.2); color: #e05252; border: 1px solid rgba(224,82,82,0.4); }
+.pos-RB { background: rgba(82,183,136,0.2); color: #52b788; border: 1px solid rgba(82,183,136,0.35); }
+.pos-WR { background: rgba(82,134,224,0.2); color: #5286e0; border: 1px solid rgba(82,134,224,0.35); }
+.pos-TE { background: rgba(224,168,82,0.2); color: #e0a852; border: 1px solid rgba(224,168,82,0.35); }
+.pos-PICK { background: rgba(234,179,8,0.15); color: #eab308; border: 1px solid rgba(234,179,8,0.2); }
+
+/* SLEEPER-STYLE AVATAR COLORS */
+.avatar-QB { background: rgba(224,82,82,0.2); border-color: rgba(224,82,82,0.4); color: #e05252; }
+.avatar-RB { background: rgba(82,183,136,0.18); border-color: rgba(82,183,136,0.35); color: #52b788; }
+.avatar-WR { background: rgba(82,134,224,0.18); border-color: rgba(82,134,224,0.35); color: #5286e0; }
+.avatar-TE { background: rgba(224,168,82,0.18); border-color: rgba(224,168,82,0.35); color: #e0a852; }
+
+/* SLEEPER HEADSHOT LOADED STATE */
+.player-card-top img {
+  border: 2px solid #333;
+  transition: border-color 0.2s;
+}
+.player-card:hover .player-card-top img {
+  border-color: var(--orange);
+}
 </style>
 </head>
 <body>
@@ -1618,26 +1640,172 @@ const PLAYERS = [
   {id:'p125',name:'Elijah Arroyo',      pos:'TE',team:'SEA',espnId:4700736,age:22,value:2070,rookie:true},
 ];
 
+// ====================================================
+// SLEEPER PLAYER ID MAP (for CDN headshots)
+// Compiled from Sleeper API — hardcoded for single-file app
+// sleepercdn.com/content/nfl/players/thumb/{id}.jpg
+// ====================================================
+const SLEEPER_IDS = {
+  // QBs
+  'Josh Allen':        '4984',
+  'Drake Maye':        '11596',
+  'Caleb Williams':    '11572',
+  'Jayden Daniels':    '11611',
+  'Lamar Jackson':     '4881',
+  'Joe Burrow':        '6786',
+  'Patrick Mahomes':   '4046',
+  'Justin Herbert':    '6770',
+  'Jaxson Dart':       '12183',
+  'Jalen Hurts':       '5850',
+  'Bo Nix':            '11603',
+  'Trevor Lawrence':   '7571',
+  'Brock Purdy':       '8155',
+  'Jordan Love':       '6903',
+  'Fernando Mendoza':  '12184',
+  'Cam Ward':          '12182',
+  'Michael Penix Jr':  '10229',
+  'Ty Simpson':        '12187',
+  'Will Howard':       '12188',
+  'Sam Darnold':       '4199',
+  'Kirk Cousins':      '2978',
+  'Geno Smith':        '1374',
+  'Hendon Hooker':     '9996',
+  'Spencer Rattler':   '8147',
+  'Gardner Minshew':   '5859',
+  'Bailey Zappe':      '8686',
+  // WRs
+  "Ja'Marr Chase":     '7564',
+  'Jaxon Smith-Njigba':'9988',
+  'Puka Nacua':        '9998',
+  'Malik Nabers':      '11636',
+  'Amon-Ra St. Brown': '7525',
+  'Justin Jefferson':  '6794',
+  'CeeDee Lamb':       '6372',
+  'Drake London':      '8143',
+  'Tetairoa McMillan': '12189',
+  'Emeka Egbuka':      '11637',
+  'George Pickens':    '8171',
+  'Garrett Wilson':    '8146',
+  'Chris Olave':       '8148',
+  'Carnell Tate':      '11640',
+  'Nico Collins':      '7992',
+  'Ladd McConkey':     '11635',
+  'Travis Hunter':     '12190',
+  'Matthew Golden':    '12191',
+  'Jayden Higgins':    '11647',
+  'DK Metcalf':        '5892',
+  'Terry McLaurin':    '5841',
+  'Mike Evans':        '1352',
+  'Davante Adams':     '2133',
+  'Jakobi Meyers':     '5906',
+  'Jack Bech':         '11645',
+  'Luther Burden III': '11641',
+  'Tre Harris':        '11648',
+  'Kyle Williams':     '11655',
+  'Romeo Doubs':       '8161',
+  'Cedric Tillman':    '9982',
+  'Mecole Hardman':    '5859',
+  'Dontayvion Wicks':  '9985',
+  'Jalen Tolbert':     '8189',
+  'Diontae Johnson':   '5981',
+  'Kendrick Bourne':   '5937',
+  'Donovan Peoples-Jones':'7561',
+  'Darius Slayton':    '5930',
+  'Skyy Moore':        '8170',
+  // RBs
+  'Bijan Robinson':    '9509',
+  'Jahmyr Gibbs':      '9505',
+  'Ashton Jeanty':     '11602',
+  'Jeremiyah Love':    '12192',
+  "De'Von Achane":     '9493',
+  'Omarion Hampton':   '11619',
+  'Jonathan Taylor':   '6126',
+  'James Cook':        '9504',
+  'Kenneth Walker III':'8131',
+  'TreVeyon Henderson':'11625',
+  'RJ Harvey':         '11622',
+  'Zach Charbonnet':   '9492',
+  "D'Andre Swift":     '6813',
+  'Kyle Monangai':     '11626',
+  'Chuba Hubbard':     '6825',
+  'Derrick Henry':     '4028',
+  'David Montgomery':  '5936',
+  'Rico Dowdle':       '6845',
+  'Blake Corum':       '9515',
+  'Jaylen Warren':     '8211',
+  'Quinshon Judkins':  '11621',
+  'Kaleb Johnson':     '12193',
+  'Cam Skattebo':      '11627',
+  'Bhayshul Tuten':    '11628',
+  'Josh Jacobs':       '5842',
+  'Saquon Barkley':    '4866',
+  'Tony Pollard':      '6820',
+  'Rachaad White':     '8212',
+  'Ezekiel Elliott':   '3198',
+  'Antonio Gibson':    '6820',
+  'Jerome Ford':       '9501',
+  'Keaton Mitchell':   '9508',
+  'Kendre Miller':     '9506',
+  // TEs
+  'Brock Bowers':      '11604',
+  'Trey McBride':      '8206',
+  'Colston Loveland':  '12194',
+  'Tyler Warren':      '12195',
+  'Tucker Kraft':      '9987',
+  'Harold Fannin Jr':  '11663',
+  'George Kittle':     '3321',
+  'Jake Ferguson':     '8207',
+  'Dalton Kincaid':    '9499',
+  'Mark Andrews':      '4218',
+  'Chigoziem Okonkwo': '8208',
+  'TJ Hockenson':      '5844',
+  'Terrance Ferguson': '11654',
+  'AJ Barner':         '11655',
+  'Mason Taylor':      '11660',
+  'Elijah Arroyo':     '11661',
+  'Michael Mayer':     '9991',
+  'Noah Fant':         '5894',
+  'Cade Otton':        '8213',
+  'David Njoku':       '4218',
+  'Dalton Schultz':    '6822',
+};
+
+function sleeperHeadshotUrl(playerName) {
+  const id = SLEEPER_IDS[playerName];
+  return id ? `https://sleepercdn.com/content/nfl/players/thumb/${id}.jpg` : null;
+}
+
+function formatPickName(pick) {
+  const ordinals = {1:'1st', 2:'2nd', 3:'3rd', 4:'4th'};
+  const rndStr = ordinals[pick.round] || `${pick.round}th`;
+  let slotStr = '';
+  if (pick.slot === 'early') slotStr = 'Early ';
+  else if (pick.slot === 'late') slotStr = 'Late ';
+  const numMatch = (pick.name || '').match(/\((\d+)\)$/);
+  const suffix = numMatch ? ` #${numMatch[1]}` : '';
+  return `${pick.year} ${slotStr}${rndStr} Rd${suffix}`;
+}
+
 const PICKS_DB = [
-  {id:'pick_2025_1e',name:'2025 Early 1st', value:3500,year:2025,round:1,slot:'early'},
-  {id:'pick_2025_1m',name:'2025 Mid 1st',   value:2800,year:2025,round:1,slot:'mid'},
-  {id:'pick_2025_1l',name:'2025 Late 1st',  value:2200,year:2025,round:1,slot:'late'},
-  {id:'pick_2025_2', name:'2025 2nd',        value:1800,year:2025,round:2,slot:'mid'},
-  {id:'pick_2025_3', name:'2025 3rd',        value:1200,year:2025,round:3,slot:'mid'},
-  {id:'pick_2026_1e',name:'2026 Early 1st', value:5717,year:2026,round:1,slot:'early'},
-  {id:'pick_2026_1m',name:'2026 Mid 1st',   value:4800,year:2026,round:1,slot:'mid'},
-  {id:'pick_2026_1l',name:'2026 Late 1st',  value:4200,year:2026,round:1,slot:'late'},
-  {id:'pick_2026_2e',name:'2026 Early 2nd', value:3287,year:2026,round:2,slot:'early'},
-  {id:'pick_2026_2', name:'2026 2nd',        value:2800,year:2026,round:2,slot:'mid'},
-  {id:'pick_2026_3', name:'2026 3rd',        value:1600,year:2026,round:3,slot:'mid'},
-  {id:'pick_2026_4', name:'2026 4th',        value:900, year:2026,round:4,slot:'mid'},
-  {id:'pick_2027_1e',name:'2027 Early 1st', value:6916,year:2027,round:1,slot:'early'},
-  {id:'pick_2027_1m',name:'2027 Mid 1st',   value:5606,year:2027,round:1,slot:'mid'},
-  {id:'pick_2027_1l',name:'2027 Late 1st',  value:4800,year:2027,round:1,slot:'late'},
-  {id:'pick_2027_2e',name:'2027 Early 2nd', value:3828,year:2027,round:2,slot:'early'},
-  {id:'pick_2027_2', name:'2027 Mid 2nd',   value:3441,year:2027,round:2,slot:'mid'},
-  {id:'pick_2027_3', name:'2027 3rd',        value:1800,year:2027,round:3,slot:'mid'},
-  {id:'pick_2028_1l',name:'2028 Late 1st',  value:3848,year:2028,round:1,slot:'late'},
+  {id:'pick_2025_1e',name:'2025 Early 1st Rd', value:3500,year:2025,round:1,slot:'early'},
+  {id:'pick_2025_1m',name:'2025 1st Rd',        value:2800,year:2025,round:1,slot:'mid'},
+  {id:'pick_2025_1l',name:'2025 Late 1st Rd',  value:2200,year:2025,round:1,slot:'late'},
+  {id:'pick_2025_2', name:'2025 2nd Rd',         value:1800,year:2025,round:2,slot:'mid'},
+  {id:'pick_2025_3', name:'2025 3rd Rd',         value:1200,year:2025,round:3,slot:'mid'},
+  {id:'pick_2026_1e',name:'2026 Early 1st Rd', value:5717,year:2026,round:1,slot:'early'},
+  {id:'pick_2026_1m',name:'2026 1st Rd',        value:4800,year:2026,round:1,slot:'mid'},
+  {id:'pick_2026_1l',name:'2026 Late 1st Rd',  value:4200,year:2026,round:1,slot:'late'},
+  {id:'pick_2026_2e',name:'2026 Early 2nd Rd', value:3287,year:2026,round:2,slot:'early'},
+  {id:'pick_2026_2', name:'2026 2nd Rd',         value:2800,year:2026,round:2,slot:'mid'},
+  {id:'pick_2026_3', name:'2026 3rd Rd',         value:1600,year:2026,round:3,slot:'mid'},
+  {id:'pick_2026_4', name:'2026 4th Rd',         value:900, year:2026,round:4,slot:'mid'},
+  {id:'pick_2027_1e',name:'2027 Early 1st Rd', value:6916,year:2027,round:1,slot:'early'},
+  {id:'pick_2027_1m',name:'2027 1st Rd',        value:5606,year:2027,round:1,slot:'mid'},
+  {id:'pick_2027_1l',name:'2027 Late 1st Rd',  value:4800,year:2027,round:1,slot:'late'},
+  {id:'pick_2027_2e',name:'2027 Early 2nd Rd', value:3828,year:2027,round:2,slot:'early'},
+  {id:'pick_2027_2', name:'2027 2nd Rd',         value:3441,year:2027,round:2,slot:'mid'},
+  {id:'pick_2027_3', name:'2027 3rd Rd',         value:1800,year:2027,round:3,slot:'mid'},
+  {id:'pick_2028_1l',name:'2028 Late 1st Rd',  value:3848,year:2028,round:1,slot:'late'},
 ];
 
 // Grade thresholds
@@ -1755,88 +1923,89 @@ const DRAFTABLE_POOL={
     {id:'dq2', name:'Kirk Cousins',              pos:'QB',team:'ATL',age:36,value:2200,rookie:false},
     {id:'dq3', name:'Sam Darnold',               pos:'QB',team:'MIN',age:27,value:1700,rookie:false},
     {id:'dq4', name:'Gardner Minshew',           pos:'QB',team:'LV', age:31,value:1500,rookie:false},
-    {id:'dq5', name:'Jacoby Brissett',           pos:'QB',team:'FA', age:32,value:1500,rookie:false},
-    {id:'dq6', name:'Derek Carr',                pos:'QB',team:'NO', age:34,value:1700,rookie:false},
-    {id:'dq7', name:'Zach Wilson',               pos:'QB',team:'DEN',age:25,value:1600,rookie:false},
-    {id:'dq8', name:'Jimmy Garoppolo',           pos:'QB',team:'FA', age:33,value:1500,rookie:false},
+    {id:'dq5', name:'Marcus Mariota',            pos:'QB',team:'FA', age:31,value:1500,rookie:false},
+    {id:'dq6', name:'Jacoby Brissett',           pos:'QB',team:'FA', age:32,value:1500,rookie:false},
+    {id:'dq7', name:'Ryan Tannehill',            pos:'QB',team:'FA', age:37,value:1400,rookie:false},
+    {id:'dq8', name:'Andy Dalton',               pos:'QB',team:'FA', age:38,value:1400,rookie:false},
     {id:'dq9', name:'Tyrod Taylor',              pos:'QB',team:'FA', age:35,value:1500,rookie:false},
     {id:'dq10',name:'Bailey Zappe',              pos:'QB',team:'NE', age:26,value:1500,rookie:false},
-    {id:'dq12',name:'Matt Corral',               pos:'QB',team:'FA', age:25,value:1400,rookie:false},
-    {id:'dq13',name:'Jake Haener',               pos:'QB',team:'NO', age:26,value:1500,rookie:false},
-    {id:'dq14',name:'Hendon Hooker',             pos:'QB',team:'DET',age:26,value:1600,rookie:false},
-    {id:'dq15',name:'Tim Boyle',                 pos:'QB',team:'FA', age:29,value:1400,rookie:false},
-    {id:'dq16',name:'Spencer Rattler',           pos:'QB',team:'NO', age:25,value:1600,rookie:false},
-    {id:'dq17',name:'Dorian Thompson-Robinson',  pos:'QB',team:'CLE',age:24,value:1600,rookie:false},
-    {id:'dq18',name:'Easton Stick',              pos:'QB',team:'LAC',age:28,value:1500,rookie:false},
-    {id:'dq19',name:'Kyle Allen',                pos:'QB',team:'FA', age:29,value:1500,rookie:false},
-    {id:'dq20',name:'Jarrett Stidham',           pos:'QB',team:'FA', age:28,value:1500,rookie:false},
+    {id:'dq11',name:'Spencer Rattler',           pos:'QB',team:'NO', age:25,value:1600,rookie:false},
+    {id:'dq12',name:'Jake Haener',               pos:'QB',team:'NO', age:26,value:1500,rookie:false},
+    {id:'dq13',name:'Hendon Hooker',             pos:'QB',team:'DET',age:26,value:1600,rookie:false},
+    {id:'dq14',name:'Easton Stick',              pos:'QB',team:'FA', age:28,value:1500,rookie:false},
+    {id:'dq15',name:'Dorian Thompson-Robinson',  pos:'QB',team:'CLE',age:24,value:1600,rookie:false},
+    {id:'dq16',name:'Case Keenum',               pos:'QB',team:'FA', age:37,value:1400,rookie:false},
+    {id:'dq17',name:'Blaine Gabbert',            pos:'QB',team:'FA', age:35,value:1400,rookie:false},
+    {id:'dq18',name:'Colt McCoy',                pos:'QB',team:'FA', age:39,value:1400,rookie:false},
+    {id:'dq19',name:'Zach Wilson',               pos:'QB',team:'DEN',age:25,value:1600,rookie:false},
+    {id:'dq20',name:'Mac Jones',                 pos:'QB',team:'JAX',age:26,value:1800,rookie:false},
   ],
   RB:[
-    {id:'dr1', name:'Ty Chandler',               pos:'RB',team:'MIN',age:26,value:1600,rookie:false},
+    {id:'dr1', name:'Tony Pollard',              pos:'RB',team:'TEN',age:27,value:2800,rookie:false},
     {id:'dr2', name:'Kendre Miller',             pos:'RB',team:'NO', age:24,value:2200,rookie:false},
-    {id:'dr3', name:'Roschon Johnson',           pos:'RB',team:'CHI',age:24,value:1700,rookie:false},
-    {id:'dr4', name:'Jaleel McLaughlin',         pos:'RB',team:'DEN',age:25,value:1900,rookie:false},
-    {id:'dr5', name:'Keaton Mitchell',           pos:'RB',team:'BAL',age:24,value:2500,rookie:false},
+    {id:'dr3', name:'Rachaad White',             pos:'RB',team:'TB', age:27,value:2200,rookie:false},
+    {id:'dr4', name:'Keaton Mitchell',           pos:'RB',team:'BAL',age:24,value:2500,rookie:false},
+    {id:'dr5', name:'Antonio Gibson',            pos:'RB',team:'NE', age:26,value:1900,rookie:false},
     {id:'dr6', name:'Kimani Vidal',              pos:'RB',team:'LAC',age:24,value:2000,rookie:false},
-    {id:'dr7', name:'Tony Pollard',              pos:'RB',team:'TEN',age:27,value:2800,rookie:false},
-    {id:'dr8', name:'Dameon Pierce',             pos:'RB',team:'HOU',age:26,value:1600,rookie:false},
-    {id:'dr9', name:'Salvon Ahmed',              pos:'RB',team:'FA', age:27,value:1500,rookie:false},
-    {id:'dr10',name:'Hassan Haskins',            pos:'RB',team:'TEN',age:26,value:1500,rookie:false},
-    {id:'dr11',name:'Patrick Taylor',            pos:'RB',team:'GB', age:27,value:1500,rookie:false},
-    {id:'dr12',name:"D'Onta Foreman",            pos:'RB',team:'FA', age:28,value:1600,rookie:false},
-    {id:'dr13',name:'Jashaun Corbin',            pos:'RB',team:'NYG',age:25,value:1700,rookie:false},
+    {id:'dr7', name:'Ezekiel Elliott',           pos:'RB',team:'FA', age:30,value:1800,rookie:false},
+    {id:'dr8', name:'Kareem Hunt',               pos:'RB',team:'FA', age:30,value:1900,rookie:false},
+    {id:'dr9', name:'Miles Sanders',             pos:'RB',team:'FA', age:27,value:1600,rookie:false},
+    {id:'dr10',name:'Jerome Ford',               pos:'RB',team:'CLE',age:25,value:2000,rookie:false},
+    {id:'dr11',name:'Devin Singletary',          pos:'RB',team:'HOU',age:27,value:1800,rookie:false},
+    {id:'dr12',name:'Dameon Pierce',             pos:'RB',team:'HOU',age:26,value:1600,rookie:false},
+    {id:'dr13',name:'Ty Chandler',               pos:'RB',team:'MIN',age:26,value:1600,rookie:false},
     {id:'dr14',name:'Chuba Hubbard',             pos:'RB',team:'CAR',age:26,value:2100,rookie:false},
     {id:'dr15',name:'Elijah Mitchell',           pos:'RB',team:'SF', age:27,value:2700,rookie:false},
-    {id:'dr16',name:'Devin Singletary',          pos:'RB',team:'HOU',age:27,value:1800,rookie:false},
-    {id:'dr17',name:'Mike Boone',                pos:'RB',team:'FA', age:29,value:1500,rookie:false},
-    {id:'dr18',name:'Craig Reynolds',            pos:'RB',team:'DET',age:27,value:1500,rookie:false},
-    {id:'dr19',name:'Nate McCrary',              pos:'RB',team:'FA', age:26,value:1500,rookie:false},
-    {id:'dr20',name:'Qadree Ollison',            pos:'RB',team:'FA', age:28,value:1500,rookie:false},
-    {id:'dr21',name:'Dontrell Hilliard',         pos:'RB',team:'FA', age:29,value:1600,rookie:false},
+    {id:'dr16',name:'Jaleel McLaughlin',         pos:'RB',team:'DEN',age:25,value:1900,rookie:false},
+    {id:'dr17',name:'Roschon Johnson',           pos:'RB',team:'CHI',age:24,value:1700,rookie:false},
+    {id:'dr18',name:'Zamir White',               pos:'RB',team:'LV', age:25,value:1600,rookie:false},
+    {id:'dr19',name:'Gus Edwards',               pos:'RB',team:'LAC',age:29,value:1800,rookie:false},
+    {id:'dr20',name:'Chris Evans',               pos:'RB',team:'CIN',age:27,value:1600,rookie:false},
+    {id:'dr21',name:'Clyde Edwards-Helaire',     pos:'RB',team:'FA', age:26,value:1600,rookie:false},
   ],
   WR:[
     {id:'dw1', name:'Cedric Tillman',            pos:'WR',team:'CLE',age:25,value:2500,rookie:false},
     {id:'dw2', name:'Mecole Hardman',            pos:'WR',team:'KC', age:26,value:1800,rookie:false},
     {id:'dw3', name:'Dontayvion Wicks',          pos:'WR',team:'GB', age:24,value:2200,rookie:false},
     {id:'dw4', name:'Jalen Tolbert',             pos:'WR',team:'DAL',age:25,value:1700,rookie:false},
-    {id:'dw5', name:'Parris Campbell',           pos:'WR',team:'NYG',age:29,value:1500,rookie:false},
-    {id:'dw6', name:'Tutu Atwell',               pos:'WR',team:'LAR',age:25,value:1500,rookie:false},
-    {id:'dw7', name:'Josh Reynolds',             pos:'WR',team:'DET',age:30,value:1500,rookie:false},
-    {id:'dw8', name:'Scotty Miller',             pos:'WR',team:'TB', age:28,value:1500,rookie:false},
-    {id:'dw9', name:'Kalif Raymond',             pos:'WR',team:'FA', age:30,value:1500,rookie:false},
-    {id:'dw10',name:'Russell Gage',              pos:'WR',team:'FA', age:29,value:1500,rookie:false},
-    {id:'dw11',name:'Marquez Callaway',          pos:'WR',team:'FA', age:28,value:1500,rookie:false},
+    {id:'dw5', name:'Romeo Doubs',               pos:'WR',team:'GB', age:25,value:2800,rookie:false},
+    {id:'dw6', name:'Darius Slayton',            pos:'WR',team:'NYG',age:27,value:1800,rookie:false},
+    {id:'dw7', name:'Kendrick Bourne',           pos:'WR',team:'NE', age:29,value:1700,rookie:false},
+    {id:'dw8', name:'Donovan Peoples-Jones',     pos:'WR',team:'CLE',age:26,value:2000,rookie:false},
+    {id:'dw9', name:'Nelson Agholor',            pos:'WR',team:'FA', age:31,value:1500,rookie:false},
+    {id:'dw10',name:'JuJu Smith-Schuster',       pos:'WR',team:'FA', age:28,value:1700,rookie:false},
+    {id:'dw11',name:'Van Jefferson',             pos:'WR',team:'ATL',age:29,value:1600,rookie:false},
     {id:'dw12',name:'Jakobi Meyers',             pos:'WR',team:'LV', age:28,value:2300,rookie:false},
-    {id:'dw13',name:'Kendall Hinton',            pos:'WR',team:'DEN',age:27,value:1500,rookie:false},
-    {id:'dw14',name:'JuJu Smith-Schuster',       pos:'WR',team:'FA', age:28,value:1700,rookie:false},
-    {id:'dw15',name:'Van Jefferson',             pos:'WR',team:'ATL',age:29,value:1600,rookie:false},
-    {id:'dw16',name:'Romeo Doubs',               pos:'WR',team:'GB', age:25,value:2800,rookie:false},
-    {id:'dw17',name:'Tre Harris',                pos:'WR',team:'LAC',age:23,value:3000,rookie:false},
-    {id:'dw18',name:'Anthony Miller',            pos:'WR',team:'FA', age:29,value:1500,rookie:false},
+    {id:'dw13',name:'Skyy Moore',                pos:'WR',team:'KC', age:24,value:1700,rookie:false},
+    {id:'dw14',name:'Diontae Johnson',           pos:'WR',team:'CAR',age:28,value:2000,rookie:false},
+    {id:'dw15',name:'Keelan Cole',               pos:'WR',team:'FA', age:31,value:1500,rookie:false},
+    {id:'dw16',name:'Tre Harris',                pos:'WR',team:'LAC',age:23,value:3000,rookie:false},
+    {id:'dw17',name:'Darnell Mooney',            pos:'WR',team:'ATL',age:27,value:2000,rookie:false},
+    {id:'dw18',name:'Kadarius Toney',            pos:'WR',team:'KC', age:26,value:1600,rookie:false},
     {id:'dw19',name:'Tyquan Thornton',           pos:'WR',team:'NE', age:25,value:1700,rookie:false},
     {id:'dw20',name:'Quez Watkins',              pos:'WR',team:'PHI',age:27,value:1600,rookie:false},
-    {id:'dw21',name:'Demarcus Robinson',         pos:'WR',team:'LAR',age:30,value:1500,rookie:false},
-    {id:'dw22',name:'Lucky Jackson',             pos:'WR',team:'CHI',age:23,value:2000,rookie:false},
-    {id:'dw23',name:'KhaDarel Hodge',            pos:'WR',team:'FA', age:29,value:1500,rookie:false},
-    {id:'dw24',name:'Trent Sherfield',           pos:'WR',team:'FA', age:29,value:1500,rookie:false},
-    {id:'dw25',name:'Diontae Johnson',           pos:'WR',team:'CAR',age:28,value:2000,rookie:false},
+    {id:'dw21',name:'Elijah Moore',              pos:'WR',team:'CLE',age:24,value:2200,rookie:false},
+    {id:'dw22',name:'Wan'Dale Robinson',        pos:'WR',team:'NYG',age:24,value:2000,rookie:false},
+    {id:'dw23',name:'Odell Beckham Jr',          pos:'WR',team:'FA', age:33,value:1700,rookie:false},
+    {id:'dw24',name:'Josh Reynolds',             pos:'WR',team:'DET',age:30,value:1500,rookie:false},
+    {id:'dw25',name:'Tutu Atwell',               pos:'WR',team:'LAR',age:25,value:1500,rookie:false},
   ],
   TE:[
     {id:'dte1', name:'Noah Fant',                pos:'TE',team:'SEA',age:27,value:2000,rookie:false},
-    {id:'dte2', name:'Greg Dulcich',             pos:'TE',team:'DEN',age:25,value:1800,rookie:false},
-    {id:'dte3', name:'Tanner Hudson',            pos:'TE',team:'BUF',age:30,value:1500,rookie:false},
-    {id:'dte4', name:'Ian Thomas',               pos:'TE',team:'CAR',age:29,value:1500,rookie:false},
-    {id:'dte5', name:'Pharaoh Brown',            pos:'TE',team:'FA', age:30,value:1500,rookie:false},
-    {id:'dte6', name:'Adam Trautman',            pos:'TE',team:'FA', age:28,value:1600,rookie:false},
+    {id:'dte2', name:'Cade Otton',               pos:'TE',team:'TB', age:25,value:2200,rookie:false},
+    {id:'dte3', name:'Dalton Schultz',           pos:'TE',team:'HOU',age:29,value:2400,rookie:false},
+    {id:'dte4', name:'David Njoku',              pos:'TE',team:'CLE',age:28,value:2800,rookie:false},
+    {id:'dte5', name:'Austin Hooper',            pos:'TE',team:'FA', age:30,value:1500,rookie:false},
+    {id:'dte6', name:'Gerald Everett',           pos:'TE',team:'LAC',age:30,value:1700,rookie:false},
     {id:'dte7', name:'Michael Mayer',            pos:'TE',team:'LV', age:23,value:2500,rookie:false},
-    {id:'dte8', name:'Juwan Johnson',            pos:'TE',team:'NO', age:28,value:1600,rookie:false},
-    {id:'dte9', name:'Jordan Akins',             pos:'TE',team:'CLE',age:32,value:1600,rookie:false},
-    {id:'dte10',name:'Josiah Deguara',           pos:'TE',team:'GB', age:27,value:1500,rookie:false},
+    {id:'dte8', name:'Tyler Conklin',            pos:'TE',team:'NYJ',age:29,value:1700,rookie:false},
+    {id:'dte9', name:'Hunter Henry',             pos:'TE',team:'NE', age:30,value:1800,rookie:false},
+    {id:'dte10',name:'Greg Dulcich',             pos:'TE',team:'DEN',age:25,value:1800,rookie:false},
     {id:'dte11',name:'Durham Smythe',            pos:'TE',team:'MIA',age:29,value:1500,rookie:false},
     {id:'dte12',name:'Charlie Kolar',            pos:'TE',team:'BAL',age:25,value:1700,rookie:false},
-    {id:'dte13',name:'Brock Wright',             pos:'TE',team:'DET',age:25,value:1500,rookie:false},
-    {id:'dte14',name:'Hunter Henry',             pos:'TE',team:'NE', age:30,value:1800,rookie:false},
-    {id:'dte15',name:'Taysom Hill',              pos:'TE',team:'NO', age:34,value:1800,rookie:false},
+    {id:'dte13',name:'Taysom Hill',              pos:'TE',team:'NO', age:34,value:1800,rookie:false},
+    {id:'dte14',name:'Cole Kmet',                pos:'TE',team:'CHI',age:25,value:2200,rookie:false},
+    {id:'dte15',name:'Tanner Hudson',            pos:'TE',team:'BUF',age:30,value:1500,rookie:false},
   ],
 }
 
@@ -2351,10 +2520,10 @@ function _initNewGame(name) {
       {id:'fb_tx4',name:'Bhayshul Tuten',pos:'RB',value:3500,rookie:true},
     ],
     picks: [
-      {id:'fb_pk1',name:'2026 1st (Late)',pos:'PICK',year:2026,round:1,slot:'late',value:4200},
-      {id:'fb_pk2',name:'2026 2nd (Mid)',pos:'PICK',year:2026,round:2,slot:'mid',value:2100},
-      {id:'fb_pk3',name:'2027 1st (Early)',pos:'PICK',year:2027,round:1,slot:'early',value:5800},
-      {id:'fb_pk4',name:'2027 2nd (Late)',pos:'PICK',year:2027,round:2,slot:'late',value:1800},
+      {id:'fb_pk1',name:'2026 Late 1st Rd',pos:'PICK',year:2026,round:1,slot:'late',value:4200},
+      {id:'fb_pk2',name:'2026 2nd Rd',pos:'PICK',year:2026,round:2,slot:'mid',value:2100},
+      {id:'fb_pk3',name:'2027 Early 1st Rd',pos:'PICK',year:2027,round:1,slot:'early',value:5800},
+      {id:'fb_pk4',name:'2027 2nd Rd',pos:'PICK',year:2027,round:2,slot:'late',value:1800},
     ],
   };
 
@@ -2706,37 +2875,44 @@ function renderPlayerCard(asset, clickable, isSelected, context) {
   const showActions = (context === 'roster' || context === 'taxi') && !asset.injured;
   const actionsHtml = showActions ? `
     <div class="player-card-actions">
-      <button class="btn-cut" onclick="event.stopPropagation();cutPlayer('${asset.id}')">â CUT</button>
-      <button class="btn-block ${onBlock?'on-block':''}" onclick="event.stopPropagation();putOnTradeBlock('${asset.id}')">${onBlock?'ð´ ON BLOCK':'ð BLOCK'}</button>
+      <button class="btn-cut" onclick="event.stopPropagation();cutPlayer('${asset.id}')">✂ CUT</button>
+      <button class="btn-block ${onBlock?'on-block':''}" onclick="event.stopPropagation();putOnTradeBlock('${asset.id}')">${onBlock?'🔴 ON BLOCK':'📋 BLOCK'}</button>
     </div>` : '';
+
+  // Sleeper headshot
+  const hsUrl = sleeperHeadshotUrl(asset.name);
+  const avatarHtml = hsUrl
+    ? `<img src="${hsUrl}" alt="${asset.name}" class="player-headshot" style="width:44px;height:44px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid #333;" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="player-avatar avatar-${asset.pos}" style="display:none">${initials}</div>`
+    : `<div class="player-avatar avatar-${asset.pos}">${initials}</div>`;
+
   return `<div class="player-card ${sel} ${inj}" ${onClick} data-id="${asset.id}">
     ${asset.injured ? '<div class="injury-badge">IR</div>' : (asset.rookie ? '<div class="rookie-badge">ROOKIE</div>' : '')}
-    ${onBlock ? '<div class="rookie-badge" style="background:rgba(255,107,0,0.2);color:var(--orange);border-color:rgba(255,107,0,0.4)">ð´ BLOCK</div>' : ''}
+    ${onBlock ? '<div class="rookie-badge" style="background:rgba(255,107,0,0.2);color:var(--orange);border-color:rgba(255,107,0,0.4)">🔴 BLOCK</div>' : ''}
     <div class="player-card-top">
-      <div class="player-avatar avatar-${asset.pos}">${initials}</div>
+      ${avatarHtml}
       <div class="player-info">
         <div class="player-name">${asset.name}</div>
-        <div class="player-meta">${asset.team || ''} Â· Age ${asset.age || '?'}</div>
+        <div class="player-meta">${asset.team || ''} · Age ${asset.age || '?'}</div>
       </div>
     </div>
     <div class="player-card-bottom">
       <span class="pos-badge pos-${asset.pos}">${asset.pos}</span>
-      <span class="player-value">${asset.value?.toLocaleString() || 'â'}</span>
+      <span class="player-value">${asset.value?.toLocaleString() || '—'}</span>
       <span class="player-grade-stamp" style="color:${gi.color};border-color:${gi.color}">${gi.grade}</span>
     </div>
     ${actionsHtml}
   </div>`;
 }
 
+
 function renderPickCard(pick, clickable, isSelected, context) {
   const sel = isSelected ? 'selected' : '';
   const onClick = clickable ? `onclick="toggleAssetSelect('${pick.id}','${context}')"` : '';
-  const yr = pick.year || '';
-  const rnd = pick.round === 1 ? '1ST' : pick.round === 2 ? '2ND' : pick.round === 3 ? '3RD' : `${pick.round}TH`;
+  const displayName = formatPickName(pick);
   return `<div class="pick-card ${sel}" ${onClick} data-id="${pick.id}">
     <span class="pos-badge pos-PICK">PICK</span>
-    <div class="pick-name" style="margin-top:8px">${pick.name}</div>
-    <div class="pick-value">${pick.value?.toLocaleString() || 'â'} KTC</div>
+    <div class="pick-name" style="margin-top:8px">${displayName}</div>
+    <div class="pick-value">${pick.value?.toLocaleString() || '—'} KTC</div>
   </div>`;
 }
 
