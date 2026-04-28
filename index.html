@@ -2144,9 +2144,13 @@ let STATE = {
   teamName: 'My Team',
   week: 0,
   phase: 'OFF_SEASON',   // OFF_SEASON | PRESEASON | REGULAR | PLAYOFFS
-  byeWeek: 8,            // randomly assigned week 4-13
+  byeWeek: 8,            // randomly assigned week 4-8
   playoffRound: 0,       // 0=not started, 1-3=rounds, 4=champion, -1=eliminated
   record: {w:0, l:0},
+  standings: {},         // { user: {w,l}, gm1: {w,l}, ... }
+  schedule: [],          // 9-week round-robin matchups
+  playoffBracket: [],    // [seed1id, seed2id, seed3id, seed4id]
+  lastAgingWeek: 0,      // track last week aging ran
   humanRoster: null,
   gmRosters: {},
   inbox: [],
@@ -2183,6 +2187,10 @@ function saveGame() {
       offerIdCounter: STATE.offerIdCounter,
       tradeBlock: STATE.tradeBlock,
       newsLog: STATE.newsLog,
+      standings: STATE.standings || {},
+      schedule: STATE.schedule || [],
+      playoffBracket: STATE.playoffBracket || [],
+      lastAgingWeek: STATE.lastAgingWeek || 0,
       savedAt: Date.now(),
     };
     localStorage.setItem(SAVE_KEY, JSON.stringify(snap));
@@ -2289,6 +2297,14 @@ function continueGame() {
   STATE.tradeBlock = save.tradeBlock || [];
   STATE.newsLog = save.newsLog || [];
   STATE.newsUnread = 0;
+  STATE.standings = save.standings || {};
+  STATE.schedule = save.schedule || [];
+  STATE.playoffBracket = save.playoffBracket || [];
+  STATE.lastAgingWeek = save.lastAgingWeek || 0;
+  // Rebuild schedule/standings if missing (old saves)
+  if (!STATE.schedule.length) STATE.schedule = _generateSchedule();
+  if (!STATE.standings['user']) STATE.standings['user'] = {w:0, l:0};
+  AI_GMS.forEach(gm => { if (!STATE.standings[gm.id]) STATE.standings[gm.id] = {w:0, l:0}; });
   STATE.initialized = true;
 
   _populateTradeSelect();
@@ -2344,7 +2360,14 @@ function _initNewGame(name) {
   STATE.teamName = name;
   STATE.week = 0;
   STATE.phase = 'OFF_SEASON';
-  STATE.byeWeek = 4 + Math.floor(Math.random() * 10); // random week 4-13
+  STATE.byeWeek = 4 + Math.floor(Math.random() * 5); // random week 4-8
+  STATE.standings = {};
+  STATE.schedule = _generateSchedule();
+  STATE.playoffBracket = [];
+  STATE.lastAgingWeek = 0;
+  // Init standings for all 10 teams
+  STATE.standings['user'] = {w:0, l:0};
+  AI_GMS.forEach(gm => { STATE.standings[gm.id] = {w:0, l:0}; });
   STATE.playoffRound = 0;
   STATE.record = {w:0, l:0};
   STATE.inbox = [];
@@ -2411,6 +2434,152 @@ function _populateTradeSelect() {
 function updateTeamName(val) {
   STATE.teamName = val || 'My Team';
   saveGame();
+}
+
+// ====================================================
+// ARCHETYPE-DRIVEN PROACTIVE TRADE OFFERS (Feature 3)
+// ====================================================
+function _generateArchetypeOffers(weekNum) {
+  const offers = [];
+  const teams = _getStandingsArray ? _getStandingsArray() : [];
+  const getRank = (id) => teams.findIndex(t => t.id === id) + 1; // 1-indexed
+
+  const humanPlayers = [...(STATE.humanRoster?.starters||[])].sort((a,b)=>b.value-a.value);
+  const humanPicks   = [...(STATE.humanRoster?.picks||[])].sort((a,b)=>b.value-a.value);
+
+  AI_GMS.forEach(gm => {
+    if (STATE.inbox.length + offers.length >= 8) return; // cap
+    const gmRoster = STATE.gmRosters[gm.id];
+    if (!gmRoster) return;
+    const gmPlayers = [...(gmRoster.starters||[])].sort((a,b)=>b.value-a.value);
+    const gmPicks   = [...(gmRoster.picks||[])].sort((a,b)=>b.value-a.value);
+
+    switch (gm.personality) {
+
+      case 'win_now': {
+        // Every 2 weeks, if in top 3: aggressive pick offer for user's best non-QB
+        if (weekNum % 2 !== 0) break;
+        const rank = getRank(gm.id);
+        if (rank > 3) break;
+        const target = humanPlayers.find(p => p.pos !== 'QB');
+        if (!target) break;
+        const bestPicks = gmPicks.slice(0, 2);
+        if (bestPicks.length < 2) break;
+        if (!offerIsFair([target], bestPicks)) break;
+        offers.push({ from: gm.id, youGive: [target], youGet: bestPicks,
+          msg: `We're making a run. Name your price — ${bestPicks.map(p=>p.name).join(' + ')} for ${target.name}.`
+        });
+        break;
+      }
+
+      case 'firesale': {
+        // If grade C or below: dump 3 players for user's top pick
+        const gmVal = calcRosterValue(gmRoster);
+        const gmGrade = getGradeInfo(gmVal).grade;
+        const lowGrades = ['F','D-','D','D+','C-','C'];
+        if (!lowGrades.includes(gmGrade)) break;
+        const topPick = humanPicks[0];
+        if (!topPick) break;
+        const dumps = gmPlayers.filter(p=>p.value<topPick.value*0.5).slice(0,3);
+        if (dumps.length < 3) break;
+        offers.push({ from: gm.id, youGive: [topPick], youGet: dumps,
+          msg: `Blowing it up. Take your pick — ${dumps.map(p=>p.name).join(' + ')} for ${topPick.name}. Let's move.`
+        });
+        break;
+      }
+
+      case 'rebuilder': {
+        // Offers best 1st round pick for user player age 28+ value >4000
+        const target = humanPlayers.find(p => p.age >= 28 && (p.value||0) > 4000);
+        if (!target) break;
+        const bestFirst = gmPicks.find(p => p.round === 1);
+        if (!bestFirst) break;
+        if (!offerIsFair([target], [bestFirst])) break;
+        offers.push({ from: gm.id, youGive: [target], youGet: [bestFirst],
+          msg: `Future for present. Let's talk — ${bestFirst.name} for ${target.name} (age ${target.age}).`
+        });
+        break;
+      }
+
+      case 'pick_seller': {
+        // Offers a player (value 4000-6000) for user's earliest pick
+        const earliestPick = humanPicks[0];
+        if (!earliestPick) break;
+        const currency = gmPlayers.find(p => p.value >= 4000 && p.value <= 6000);
+        if (!currency) break;
+        if (!offerIsFair([earliestPick], [currency])) break;
+        offers.push({ from: gm.id, youGive: [earliestPick], youGet: [currency],
+          msg: `I don't believe in picks. Give me yours — ${currency.name} for your ${earliestPick.name}.`
+        });
+        break;
+      }
+
+      case 'contender': {
+        // Only if #1 or #2: top player swap ±10%
+        const rank = getRank(gm.id);
+        if (rank > 2) break;
+        const target = humanPlayers[0];
+        if (!target) break;
+        const swap = gmPlayers.find(p => Math.abs(p.value - target.value) / target.value <= 0.10);
+        if (!swap) break;
+        offers.push({ from: gm.id, youGive: [target], youGet: [swap],
+          msg: `I'm running this league. ${swap.name} for ${target.name} — equal value, but I need that role filled.`
+        });
+        break;
+      }
+
+      // Personality-flavored lines for remaining archetypes
+      case 'premium_chaser': {
+        const target = humanPlayers.find(p => (p.value||0) >= 6000);
+        if (!target) break;
+        const bundle = buildFairBundle(gmPlayers, gmPicks, target.value, 'mixed', 0.12);
+        if (!bundle || !offerIsFair([target], bundle)) break;
+        offers.push({ from: gm.id, youGive: [target], youGet: bundle,
+          msg: `Only the best assets. No exceptions. ${bundle.map(a=>a.name).join(' + ')} for ${target.name} — that's my standard.`
+        });
+        break;
+      }
+
+      case 'aggressive': {
+        if (weekNum % 2 === 0) break; // alternate weeks to avoid spam
+        const idx = Math.floor(Math.random() * Math.min(4, humanPlayers.length));
+        const target = humanPlayers[idx];
+        if (!target) break;
+        const bundle = buildFairBundle(gmPlayers, gmPicks, target.value, 'mixed', 0.13);
+        if (!bundle || !offerIsFair([target], bundle)) break;
+        offers.push({ from: gm.id, youGive: [target], youGet: bundle,
+          msg: `I never stop making moves. ${bundle.map(a=>a.name).join(' + ')} for ${target.name}. Let's talk.`
+        });
+        break;
+      }
+
+      case 'negotiator': {
+        const target = humanPlayers[Math.floor(Math.random()*Math.min(3,humanPlayers.length))];
+        if (!target) break;
+        const bundle = buildFairBundle(gmPlayers, gmPicks, target.value, 'mixed', 0.10);
+        if (!bundle || !offerIsFair([target], bundle)) break;
+        offers.push({ from: gm.id, youGive: [target], youGet: bundle,
+          msg: `There's always a deal to be made... ${bundle.map(a=>a.name).join(' + ')} for ${target.name}. Counter me.`
+        });
+        break;
+      }
+
+      case 'data_gm': {
+        const target = humanPlayers[Math.floor(Math.random()*Math.min(3,humanPlayers.length))];
+        if (!target) break;
+        const bundle = buildFairBundle(gmPlayers, gmPicks, target.value, 'mixed', 0.08);
+        if (!bundle || !offerIsFair([target], bundle)) break;
+        offers.push({ from: gm.id, youGive: [target], youGet: bundle,
+          msg: `The numbers say this is a good time to deal. ${bundle.map(a=>a.name).join(' + ')} for ${target.name} — model-approved.`
+        });
+        break;
+      }
+
+      default: break;
+    }
+  });
+
+  return offers;
 }
 
 function scheduleAIOffers() {
@@ -2494,6 +2663,16 @@ function renderGradeCard() {
   const fullPct = Math.min(100, Math.round(((total - fullMin) / (fullMax - fullMin)) * 100));
   spb.style.width = Math.max(2,fullPct) + '%';
   spb.style.background = gi.color;
+
+  // Show record in grade card title
+  const titleEl = document.querySelector('.grade-card-title');
+  if (titleEl) {
+    const rec = STATE.standings['user'] || STATE.record || {w:0, l:0};
+    const hasRecord = rec.w > 0 || rec.l > 0;
+    titleEl.innerHTML = hasRecord
+      ? `Team Grade <span class="record-badge">${rec.w}-${rec.l}</span>`
+      : 'Team Grade';
+  }
 }
 
 function getZone(value) {
@@ -2802,7 +2981,21 @@ function _generateWeeklyOffers(maxCount) {
     }
   }
 
-  // Check trade block â if any player on block, try targeted offers
+  // ── ARCHETYPE-SPECIFIC PROACTIVE OFFERS ─────────────────────────
+  // Cap total inbox at 8; only add archetype offers if below cap
+  if (STATE.inbox.length < 8 && STATE.phase !== 'OFF_SEASON') {
+    const archetypeOffers = _generateArchetypeOffers(STATE.week);
+    archetypeOffers.forEach(offer => {
+      if (STATE.inbox.length < 8) {
+        offer.id = nextOfferId();
+        offer.timestamp = Date.now();
+        offer.read = false;
+        STATE.inbox.unshift(offer);
+      }
+    });
+  }
+
+  // Check trade block — if any player on block, try targeted offers
   if (STATE.tradeBlock && STATE.tradeBlock.length) {
     const blockChance = Math.random();
     if (blockChance < 0.6) { // 60% chance each week advance triggers a block offer
@@ -2876,12 +3069,13 @@ function updateSeasonDisplay() {
     btnText = 'â­ START REGULAR SEASON';
   } else if (STATE.phase === 'REGULAR') {
     const isBye = STATE.week === STATE.byeWeek;
-    label   = isBye ? `BYE WEEK ${STATE.week}` : `WEEK ${STATE.week}`;
-    btnText = STATE.week >= 18
-      ? 'â­ ENTER PLAYOFFS'
-      : `â­ ADVANCE TO WEEK ${STATE.week + 1}`;
+    const userRec = STATE.standings['user'] || STATE.record || {w:0,l:0};
+    label   = isBye ? `BYE WEEK ${STATE.week}` : `WEEK ${STATE.week} (${userRec.w}-${userRec.l})`;
+    btnText = STATE.week >= 9
+      ? '⏭ ENTER PLAYOFFS'
+      : `⏭ ADVANCE TO WEEK ${STATE.week + 1}`;
   } else if (STATE.phase === 'PLAYOFFS') {
-    if (STATE.playoffRound === 1)       { label = 'PLAYOFFS â ROUND 1';       btnText = 'â­ SIMULATE ROUND 1'; }
+    if (STATE.playoffRound === 1)       { label = 'PLAYOFFS — SEMIS';          btnText = '⏭ SIMULATE ROUND 1'; }
     else if (STATE.playoffRound === 2)  { label = 'PLAYOFFS â SEMI-FINAL';    btnText = 'â­ SIMULATE SEMI-FINAL'; }
     else if (STATE.playoffRound === 3)  { label = 'PLAYOFFS â CHAMPIONSHIP';  btnText = 'â­ SIMULATE CHAMPIONSHIP'; }
     else if (STATE.playoffRound === 4)  { label = 'ð CHAMPION';              btnText = 'ð START NEW REBUILD'; }
@@ -2892,42 +3086,305 @@ function updateSeasonDisplay() {
   if (btn) btn.textContent = btnText;
 }
 
-function _simulatePlayoffRound() {
-  const GRADE_ORDER = ['D-','D','D+','C-','C','C+','B-','B','B+','A-','A','A+'];
-  const total = calcRosterValue(STATE.humanRoster);
-  const grade = getGradeInfo(total).grade;
-  const gi = GRADE_ORDER.indexOf(grade);
+// Simulate a single playoff game between two teams using win probability
+function _simPlayoffGame(teamAId, teamBId) {
+  const valA = teamAId === 'user' ? calcRosterValue(STATE.humanRoster) : calcRosterValue(STATE.gmRosters[teamAId]);
+  const valB = teamBId === 'user' ? calcRosterValue(STATE.humanRoster) : calcRosterValue(STATE.gmRosters[teamBId]);
+  const sum = valA + valB;
+  let probA = sum > 0 ? 0.5 + (valA - valB) / sum * 0.6 : 0.5;
+  probA = Math.max(0.15, Math.min(0.85, probA));
+  return Math.random() < probA ? teamAId : teamBId;
+}
 
+function _getTeamDisplayName(id) {
+  if (id === 'user') return STATE.teamName;
+  const gm = AI_GMS.find(g => g.id === id);
+  return gm ? gm.team : id;
+}
+
+// Entry point: called when regular season ends
+function _startPlayoffs() {
+  const teams = _getStandingsArray();
+  const top4 = teams.slice(0, 4);
+  const userSeed = top4.findIndex(t => t.id === 'user') + 1; // 1-indexed, 0 means missed
+
+  STATE.phase = 'PLAYOFFS';
+
+  if (userSeed === 0) {
+    // User missed playoffs
+    STATE.playoffRound = -1;
+    const standing = teams.findIndex(t => t.id === 'user') + 1;
+    addNews('❌', `${STATE.teamName} finished ${standing}th — missed the playoffs (top 4 qualify)`);
+    showToast('❌ MISSED PLAYOFFS', `You finished ${standing}th. Only top 4 advance. The rebuild goes on.`, 'error');
+  } else {
+    STATE.playoffRound = 1;
+    // Bracket: [#1, #2, #3, #4] — #1 vs #4, #2 vs #3 in semis
+    STATE.playoffBracket = top4.map(t => t.id);
+    const seeds = top4.map((t,i) => `#${i+1} ${t.name}`).join(' • ');
+    addNews('🏆', `PLAYOFFS SET — ${seeds}. ${STATE.teamName} is seed ${userSeed}.`);
+    // #1 vs #4, #2 vs #3
+    const oppSeed = 5 - userSeed;
+    showToast('🏆 PLAYOFFS!', `Seed #${userSeed}! Facing #${oppSeed} ${_getTeamDisplayName(top4[oppSeed-1]?.id||'?')} in the semis.`, 'success');
+    _generateWeeklyOffers(3);
+  }
+}
+
+function _simulatePlayoffRound() {
   if (STATE.playoffRound === 1) {
-    if (gi <= GRADE_ORDER.indexOf('C+')) {
+    // Semi-finals: #1 vs #4, #2 vs #3
+    const [s1, s2, s3, s4] = STATE.playoffBracket;
+    const w1 = _simPlayoffGame(s1, s4); // higher seed game
+    const w2 = _simPlayoffGame(s2, s3);
+
+    const w1name = _getTeamDisplayName(w1);
+    const w2name = _getTeamDisplayName(w2);
+    addNews('🏆', `Semis: ${_getTeamDisplayName(s1)} vs ${_getTeamDisplayName(s4)} → ${w1name} advances`);
+    addNews('🏆', `Semis: ${_getTeamDisplayName(s2)} vs ${_getTeamDisplayName(s3)} → ${w2name} advances`);
+
+    // Finalists
+    STATE.playoffBracket = [w1, w2];
+    const userInFinals = STATE.playoffBracket.includes('user');
+
+    if (!userInFinals) {
       STATE.playoffRound = -1;
-      showToast('â ROUND 1 EXIT', `${grade} isn't enough. The rebuild continues... or doesn't.`, 'info');
+      showToast('❌ ELIMINATED — SEMIS', `${_getTeamDisplayName(w1)} and ${_getTeamDisplayName(w2)} advance to the Final. So close.`, 'error');
     } else {
       STATE.playoffRound = 2;
       _generateWeeklyOffers(2);
-      showToast('â ROUND 1 WIN', "Semi-finals await. Don't blow it.", 'success');
+      const opp = STATE.playoffBracket.find(id => id !== 'user');
+      showToast('✅ SEMIS WIN', `🏆 Championship matchup: YOU vs ${_getTeamDisplayName(opp)}. Everything on the line.`, 'success');
     }
+
   } else if (STATE.playoffRound === 2) {
-    if (gi <= GRADE_ORDER.indexOf('B+')) {
-      STATE.playoffRound = -1;
-      showToast('â SEMI-FINAL EXIT', `Grade ${grade}. Close, but not close enough.`, 'info');
-    } else {
-      STATE.playoffRound = 3;
-      _generateWeeklyOffers(2);
-      showToast('â SEMI-FINAL WIN', 'Championship game. Everything on the line.', 'success');
-    }
-  } else if (STATE.playoffRound === 3) {
-    if (gi >= GRADE_ORDER.indexOf('A-')) {
+    // Championship
+    const [f1, f2] = STATE.playoffBracket;
+    const champion = _simPlayoffGame(f1, f2);
+    const runnerUp = champion === f1 ? f2 : f1;
+
+    if (champion === 'user') {
       STATE.playoffRound = 4;
-      showToast('ð CHAMPION', 'You rebuilt the dynasty. They doubted you.', 'success');
+      addNews('🏆', `${STATE.teamName} wins the CHAMPIONSHIP! The rebuild is complete. 🏆`);
+      showToast('🏆 CHAMPION!', "You rebuilt the dynasty. They said it couldn't be done. Legendary.", 'success');
     } else {
       STATE.playoffRound = -1;
-      showToast('â CHAMPIONSHIP LOSS', `Grade ${grade} falls one round short. So close.`, 'info');
+      const champName = _getTeamDisplayName(champion);
+      addNews('😔', `${STATE.teamName} fell in the Championship. ${champName} wins it all.`);
+      showToast('❌ CHAMPIONSHIP LOSS', `${champName} takes the title. You were one game away.`, 'error');
     }
+
   } else if (STATE.playoffRound === 4 || STATE.playoffRound === -1) {
     showEntryScreen();
     return;
   }
+}
+
+// ====================================================
+// SEASON SCHEDULE + GAME SIMULATION (Feature 1)
+// ====================================================
+
+// Generate a 9-week round-robin schedule for 10 teams
+function _generateSchedule() {
+  const teams = ['user', ...AI_GMS.map(g => g.id)]; // 10 teams
+  const n = teams.length;
+  const t = [...teams];
+  const schedule = [];
+  // Standard round-robin rotation: fix index 0, rotate rest
+  for (let round = 0; round < n - 1; round++) {
+    const matches = [];
+    for (let i = 0; i < n / 2; i++) {
+      matches.push({ home: t[i], away: t[n - 1 - i] });
+    }
+    schedule.push(matches);
+    // Rotate indices 1..n-1
+    t.splice(1, 0, t.pop());
+  }
+  return schedule; // 9 rounds (weeks 1-9)
+}
+
+// Roster value helper for any team
+function _teamRosterValue(teamId) {
+  if (teamId === 'user') return calcRosterValue(STATE.humanRoster);
+  return calcRosterValue(STATE.gmRosters[teamId] || {});
+}
+
+// Simulate all 5 matchups in a given week and update standings
+function _simulateWeekGames(weekNum) {
+  const weekIndex = weekNum - 1;
+  if (weekIndex < 0 || !STATE.schedule[weekIndex]) return;
+  const matches = STATE.schedule[weekIndex];
+
+  matches.forEach(match => {
+    const vHome = _teamRosterValue(match.home);
+    const vAway = _teamRosterValue(match.away);
+    const sum = vHome + vAway;
+    let homeWinProb = sum > 0 ? 0.5 + (vHome - vAway) / sum * 0.6 : 0.5;
+    homeWinProb = Math.max(0.15, Math.min(0.85, homeWinProb));
+    const homeWins = Math.random() < homeWinProb;
+
+    const hRec = STATE.standings[match.home] || {w:0, l:0};
+    const aRec = STATE.standings[match.away] || {w:0, l:0};
+    if (homeWins) { hRec.w++; aRec.l++; }
+    else           { hRec.l++; aRec.w++; }
+    STATE.standings[match.home] = hRec;
+    STATE.standings[match.away] = aRec;
+  });
+
+  // Sync user record to STATE.record for backward compat
+  const userRec = STATE.standings['user'] || {w:0, l:0};
+  STATE.record = {...userRec};
+}
+
+// Return the user's matchup result for a given week { opp, won }
+function _getUserWeekMatchup(weekNum) {
+  const weekIndex = weekNum - 1;
+  if (weekIndex < 0 || !STATE.schedule[weekIndex]) return null;
+  const match = STATE.schedule[weekIndex].find(m => m.home === 'user' || m.away === 'user');
+  if (!match) return null;
+  const userIsHome = match.home === 'user';
+  const opp = userIsHome ? match.away : match.home;
+  const userRec = STATE.standings['user'] || {w:0,l:0};
+  // Determine if user won: check last game result
+  // We can't easily look it up after-the-fact so we check the current standings
+  // (already updated by _simulateWeekGames) vs what they were before.
+  // Instead, pass back the opp and current record; the won flag uses prior state.
+  return { opp };
+}
+
+// ====================================================
+// PLAYER AGING + VALUE SHIFTS (Feature 2)
+// ====================================================
+function _processPlayerAging() {
+  const allTeams = [
+    { id: 'user', roster: STATE.humanRoster },
+    ...AI_GMS.map(gm => ({ id: gm.id, roster: STATE.gmRosters[gm.id] }))
+  ];
+
+  allTeams.forEach(({ id, roster }) => {
+    if (!roster) return;
+    const lists = [roster.starters || [], roster.taxi || []];
+    lists.forEach(list => {
+      list.forEach(player => {
+        if (!player || !player.age) return;
+        let v = player.value || 0;
+
+        // Age 32+: 25% chance of bigger drop (300-500)
+        if (player.age >= 32 && Math.random() < 0.25) {
+          const drop = 300 + Math.floor(Math.random() * 201);
+          v = Math.max(500, v - drop);
+          if (v < player.value) {
+            const teamLabel = id === 'user' ? STATE.teamName : (_getTeamDisplayName(id));
+            addNews('📉', `${player.name} declining — age catching up (${teamLabel})`);
+          }
+        }
+        // Age 30+: regular value decline 100-200
+        else if (player.age >= 30) {
+          const drop = 100 + Math.floor(Math.random() * 101);
+          v = Math.max(500, v - drop);
+        }
+
+        // Age 25-: 15% breakout chance if value 3000-6000
+        if (player.age <= 25 && player.value >= 3000 && player.value <= 6000 && Math.random() < 0.15) {
+          const gain = 150 + Math.floor(Math.random() * 151);
+          v = Math.min(9800, v + gain);
+          addNews('🔥', `${player.name} is trending UP — value now ${v.toLocaleString()} (${_getTeamDisplayName(id)})`);
+        }
+
+        // Apply floor/cap
+        player.value = Math.max(500, Math.min(9800, v));
+      });
+    });
+  });
+}
+
+// ── FEATURE 4: Weekly Injury Simulation ─────────────────────────────────────
+const INJURY_POOL = [
+  { name: 'ACL Tear',         weeks: 8 },
+  { name: 'MCL Sprain',       weeks: 4 },
+  { name: 'Hamstring Strain', weeks: 2 },
+  { name: 'Ankle Sprain',     weeks: 2 },
+  { name: 'Shoulder Strain',  weeks: 3 },
+  { name: 'Concussion',       weeks: 1 },
+  { name: 'Rib Fracture',     weeks: 3 },
+  { name: 'Back Spasms',      weeks: 2 },
+];
+
+function _injuryChance(player) {
+  const pos = (player.pos || '').toUpperCase();
+  const age = player.age || 25;
+  let base = 0.04;
+  if (pos === 'RB') base = age >= 28 ? 0.12 : 0.06;
+  else if (pos === 'WR' || pos === 'TE') base = 0.05;
+  const ageBonus = age > 30 ? (age - 30) * 0.02 : 0;
+  return Math.min(base + ageBonus, 0.40);
+}
+
+function _processInjuries() {
+  const allTeams = [
+    { id: 'user', roster: STATE.humanRoster },
+    ...AI_GMS.map(gm => ({ id: gm.id, roster: STATE.gmRosters[gm.id] }))
+  ];
+
+  allTeams.forEach(({ id, roster }) => {
+    if (!roster) return;
+    const teamLabel = id === 'user' ? (STATE.teamName || 'Your Team') : _getTeamDisplayName(id);
+
+    // ── Step 1: Return players whose IR stint is up ──────────────────────────
+    const returning = (roster.ir || []).filter(p => p.returnWeek && p.returnWeek <= STATE.week);
+    returning.forEach(p => {
+      addNews('✅', `${p.name} has been activated off IR (${teamLabel})`);
+      p.injured = false;
+      delete p.returnWeek;
+      delete p.injuryName;
+      // Move back to starters (or taxi if they were taxi)
+      const fromTaxi = p._fromTaxi;
+      delete p._fromTaxi;
+      if (fromTaxi) {
+        roster.taxi = [...(roster.taxi || []), p];
+      } else {
+        roster.starters = [...(roster.starters || []), p];
+      }
+    });
+    if (returning.length > 0) {
+      roster.ir = (roster.ir || []).filter(p => !returning.includes(p));
+    }
+
+    // ── Step 2: Cap — don't pile on if already at 2 IR ──────────────────────
+    if ((roster.ir || []).length >= 2) return;
+
+    // ── Step 3: Check active players for new injuries ────────────────────────
+    const activeLists = [
+      { list: roster.starters || [], fromTaxi: false },
+      { list: roster.taxi    || [], fromTaxi: true  },
+    ];
+
+    activeLists.forEach(({ list, fromTaxi }) => {
+      list.forEach(player => {
+        if (!player || player.injured) return;
+        if ((roster.ir || []).length >= 2) return; // re-check cap per player
+
+        const chance = _injuryChance(player);
+        if (Math.random() < chance) {
+          const inj = INJURY_POOL[Math.floor(Math.random() * INJURY_POOL.length)];
+          player.injured    = true;
+          player.returnWeek = STATE.week + inj.weeks;
+          player.injuryName = inj.name;
+          player._fromTaxi  = fromTaxi;
+
+          // Move to IR
+          roster.ir = [...(roster.ir || []), player];
+
+          // Remove from active list (mutate in place)
+          if (fromTaxi) {
+            roster.taxi = (roster.taxi || []).filter(p => p.id !== player.id);
+          } else {
+            roster.starters = (roster.starters || []).filter(p => p.id !== player.id);
+          }
+
+          addNews('💊', `${player.name} (${teamLabel}) — ${inj.name}, out ${inj.weeks} week${inj.weeks !== 1 ? 's' : ''}`);
+        }
+      });
+    });
+  });
 }
 
 function _simulateAIvsAITrade() {
@@ -2969,28 +3426,44 @@ function advanceSeason() {
     showToast('ð WEEK 1 â REGULAR SEASON', `The season is live. ${n} new trade proposal${n!==1?'s':''}.`, 'info');
 
   } else if (STATE.phase === 'REGULAR') {
-    if (STATE.week >= 18) {
-      STATE.phase = 'PLAYOFFS';
-      STATE.playoffRound = 1;
-      STATE.inbox.forEach(o => o.read = true);
-      const n = _generateWeeklyOffers(3);
-      addNews('ð', 'PLAYOFFS BEGIN â rebuild is being tested');
-      showToast('ð PLAYOFFS BEGIN', 'Your rebuild is being tested. Make it count.', 'info');
+    if (STATE.week >= 9) {
+      // Regular season complete — build playoff bracket from standings
+      _startPlayoffs();
     } else {
       STATE.week++;
       STATE.inbox.forEach(o => o.read = true);
+      // Snapshot wins before simulation to detect user result
+      const _winsBefore = (STATE.standings['user'] || {w:0}).w;
+      // Simulate all 5 games this week
+      _simulateWeekGames(STATE.week);
+      // Player aging every 2 weeks
+      if (STATE.week >= STATE.lastAgingWeek + 2) {
+        _processPlayerAging();
+        STATE.lastAgingWeek = STATE.week;
+        renderGradeCard();
+      }
+      // Weekly injury simulation (every week)
+      _processInjuries();
       const isBye = STATE.week === STATE.byeWeek;
       const n = _generateWeeklyOffers(isBye ? 2 : 3);
-      // Simulate AI vs AI trade for news feed (30% chance)
       if (Math.random() < 0.3) _simulateAIvsAITrade();
+      const rec = STATE.standings['user'] || {w:0,l:0};
       if (isBye) {
-        showToast(`ð´ BYE WEEK ${STATE.week}`, 'Enjoy the bye. GMs are still watching.', 'info');
+        showToast(`ð´ BYE WEEK ${STATE.week}`, `Record: ${rec.w}-${rec.l}. GMs are still watching.`, 'info');
       } else {
-        showToast(`â­ WEEK ${STATE.week}`, `${n} new trade proposal${n!==1?'s':''}.`, 'info');
+        const mu = _getUserWeekMatchup(STATE.week);
+        const oppLabel = mu ? _getTeamDisplayName(mu.opp) : 'TBD';
+        const finalRec = STATE.standings['user'] || {w:0,l:0};
+        const userWon = finalRec.w > _winsBefore;
+        const wlIcon = userWon ? '✅' : '❌';
+        const resultWord = userWon ? 'WIN' : 'LOSS';
+        addNews(wlIcon, `Week ${STATE.week} vs ${oppLabel}: ${resultWord} — Record: ${finalRec.w}-${finalRec.l}`);
+        showToast(`${wlIcon} WEEK ${STATE.week} — ${resultWord}`, `vs ${oppLabel} | ${finalRec.w}-${finalRec.l} | ${n} new offer${n!==1?'s':''}.`, userWon?'success':'info');
       }
     }
 
   } else if (STATE.phase === 'PLAYOFFS') {
+    _processInjuries();
     _simulatePlayoffRound();
   }
 
@@ -3374,29 +3847,56 @@ function closeTradeModal() {
 // ====================================================
 // STANDINGS
 // ====================================================
-function renderStandings() {
-  const body = document.getElementById('standingsBody');
-  const teams = [
-    { name: STATE.teamName, gm:'You', isYou:true, value:calcRosterValue(STATE.humanRoster), record:STATE.record },
+function _getStandingsArray() {
+  const allTeams = [
+    { id:'user', name:STATE.teamName, gm:'You', isYou:true,
+      value:calcRosterValue(STATE.humanRoster),
+      record: STATE.standings['user'] || {w:0,l:0} },
     ...AI_GMS.map(gm=>({
-      name:gm.team, gm:gm.name, isYou:false,
+      id:gm.id, name:gm.team, gm:gm.name, isYou:false,
       value:calcRosterValue(STATE.gmRosters[gm.id]),
-      grade:gm.grade, record:{w:0,l:0}
+      record: STATE.standings[gm.id] || {w:0,l:0}
     }))
   ];
-  teams.sort((a,b)=>b.value-a.value);
+  allTeams.sort((a,b) => b.record.w !== a.record.w
+    ? b.record.w - a.record.w
+    : b.value - a.value);
+  return allTeams;
+}
 
-  body.innerHTML = teams.map((t,i)=>{
+function renderStandings() {
+  const body = document.getElementById('standingsBody');
+  const teams = _getStandingsArray();
+  const postSeason = STATE.phase === 'PLAYOFFS' || STATE.week >= 9;
+
+  let banner = '';
+  if (postSeason) {
+    const userRank = teams.findIndex(t => t.id === 'user') + 1;
+    const qualified = userRank <= 4;
+    const bc = qualified ? 'rgba(45,122,45,0.15)' : 'rgba(204,34,34,0.1)';
+    const brd = qualified ? 'var(--green-bright)' : 'var(--red)';
+    const tc  = qualified ? 'var(--green-glow)'   : 'var(--red)';
+    const txt = qualified ? '🏆 PLAYOFFS — TOP 4 QUALIFIED' : '❌ REGULAR SEASON FINAL';
+    banner = `<tr><td colspan="6" style="background:${bc};border:1px solid ${brd};text-align:center;font-size:12px;font-weight:800;letter-spacing:2px;padding:8px;color:${tc}">${txt}</td></tr>`;
+  }
+
+  body.innerHTML = banner + teams.map((t,i)=>{
     const gi = getGradeInfo(t.value);
+    const pmk = postSeason && i < 4 ? '🏆 ' : '';
+    const seedStyle = postSeason && i < 4
+      ? 'color:var(--green-glow);font-weight:800'
+      : 'color:var(--muted);font-weight:700';
+    const recColor = t.record.w > t.record.l ? 'var(--green-glow)'
+      : t.record.l > t.record.w ? 'var(--red)' : 'var(--muted)';
     return `<tr class="${t.isYou?'you':''}">
-      <td style="color:var(--muted);font-weight:700">${i+1}</td>
+      <td style="${seedStyle}">${pmk}${i+1}</td>
       <td style="font-weight:700">${t.name}${t.isYou?' <span style="color:var(--orange);font-size:11px">(YOU)</span>':''}</td>
       <td style="color:var(--muted)">${t.gm}</td>
-      <td><span style="color:${gi.color};font-weight:800;font-family:\'Courier New\',monospace">${gi.grade}</span></td>
-      <td style="font-family:\'Courier New\',monospace;color:var(--muted)">${t.value.toLocaleString()}</td>
-      <td style="color:var(--muted)">${t.record.w}-${t.record.l}</td>
+      <td><span style="color:${gi.color};font-weight:800;font-family:'Courier New',monospace">${gi.grade}</span></td>
+      <td style="font-family:'Courier New',monospace;color:var(--muted)">${t.value.toLocaleString()}</td>
+      <td style="font-weight:700;color:${recColor}">${t.record.w}-${t.record.l}</td>
     </tr>`;
-  }).join('');
+  }).join('')
 }
 
 // ====================================================
